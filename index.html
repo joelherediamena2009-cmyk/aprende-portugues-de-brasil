@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Aprende Portugués de Brasil</title>
+<style>
+:root{--bg:#f6f8f4;--card:#fff;--tx:#23302a;--mut:#6b7a72;--pri:#2e9e6b;--pri2:#e8f5ee;--acc:#f5b83d;--bd:#dfe6e0;--ok:#1f9d55;--okbg:#d9f3e3;--ko:#d64545;--kobg:#fbdcdc;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141a17;--card:#1d2621;--tx:#e6efe9;--mut:#93a39a;--pri:#4cc38a;--pri2:#223a2d;--bd:#2d3a33;--okbg:#1f4a30;--kobg:#552626;--ok:#6fdc9a;--ko:#ff8a8a}}
+:root[data-theme="dark"]{--bg:#141a17;--card:#1d2621;--tx:#e6efe9;--mut:#93a39a;--pri:#4cc38a;--pri2:#223a2d;--bd:#2d3a33;--okbg:#1f4a30;--kobg:#552626;--ok:#6fdc9a;--ko:#ff8a8a}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.5}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--card);border-bottom:1px solid var(--bd);display:flex;gap:6px;padding:10px 12px;overflow-x:auto;align-items:center}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--card);z-index:10}
+.logo{font-weight:800;color:var(--pri);margin-right:8px;white-space:nowrap}
+nav button{border:0;background:none;color:var(--mut);padding:8px 14px;border-radius:20px;font:inherit;font-weight:600;cursor:pointer;white-space:nowrap}
+nav button.on{background:var(--pri);color:#fff}
+main{max-width:900px;margin:0 auto;padding:20px 16px 40px}
+h2{margin:.2em 0 .6em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:18px;text-align:center;cursor:pointer;transition:.15s}
+.card:hover{transform:translateY(-3px);border-color:var(--pri)}
+.card .e{font-size:2.6rem}
+.card small{color:var(--mut)}
+.btn{background:var(--pri);color:#fff;border:0;border-radius:12px;padding:10px 16px;font:inherit;font-weight:600;cursor:pointer}
+.btn.alt{background:var(--pri2);color:var(--pri)}
+.btn.big{background:var(--acc);color:#3a2b00;margin-top:18px}
+.row{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px 14px;margin-bottom:8px}
+.row .n{flex:1;color:var(--mut)}.row .p{flex:1;font-weight:700}
+.spk{border:0;background:var(--pri2);border-radius:50%;width:38px;height:38px;cursor:pointer;font-size:1.1rem}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0}
+.reader{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:20px;margin-top:12px}
+.reader .w{cursor:pointer;border-radius:4px;padding:0 1px}
+.reader .w:hover{background:var(--acc);color:#3a2b00}
+.reader .w.sel{background:var(--pri);color:#fff}
+#tip{min-height:1.6em;color:var(--pri);font-weight:600}
+.s-s{font-size:1rem}.s-m{font-size:1.25rem}.s-l{font-size:1.6rem}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}
+.stat{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;text-align:center}
+.stat b{display:block;font-size:1.6rem;color:var(--pri)}
+#target{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px;font:1.25rem/1.8 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;word-break:break-word}
+#target .ok{color:var(--ok);background:var(--okbg)}
+#target .ko{color:var(--ko);background:var(--kobg)}
+#target .cur{border-left:2px solid var(--acc);margin-left:-2px;animation:b 1s infinite}
+@keyframes b{50%{border-color:transparent}}
+textarea{width:100%;height:110px;margin-top:12px;border-radius:12px;border:1px solid var(--bd);background:var(--card);color:var(--tx);padding:12px;font:1.05rem ui-monospace,Menlo,monospace;resize:vertical}
+select{padding:9px;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx);font:inherit}
+.hide{display:none}
+.lang{display:flex;gap:12px;flex-wrap:wrap}
+.lang .card{flex:1;min-width:150px}.lang .card.on{border-color:var(--pri);background:var(--pri2)}
+.done{color:var(--ok);font-weight:700;margin-top:10px}
+</style>
+</head>
+<body>
+<nav id="nav"><span class="logo">🇧🇷 PT-BR</span></nav>
+<main id="main"></main>
+
+<script>
+/* ============ DATOS AMPLIADOS ============ */
+const APP_DATA = {
+  categories: [
+    { 
+      id: "food", 
+      emoji: "🍎", 
+      name: { es: "Comida y Bebida", en: "Food & Drinks" }, 
+      words: [
+        // Frutas
+        {es: "manzana", en: "apple", pt: "maçã"},
+        {es: "plátano", en: "banana", pt: "banana"},
+        {es: "naranja", en: "orange", pt: "laranja"},
+        {es: "fresa", en: "strawberry", pt: "morango"},
+        {es: "limón", en: "lemon", pt: "limão"},
+        {es: "uva", en: "grape", pt: "uva"},
+        {es: "piña", en: "pineapple", pt: "abacaxi"},
+        {es: "sandía", en: "watermelon", pt: "melancia"},
+        {es: "melocotón", en: "peach", pt: "pêssego"},
+        {es: "aguacate", en: "avocado", pt: "abacate"},
+        {es: "coco", en: "coconut", pt: "coco"},
+        {es: "mango", en: "mango", pt: "manga"},
+        {es: "maracuyá", en: "passion fruit", pt: "maracujá"},
+        {es: "papaya", en: "papaya", pt: "mamão"},
+        {es: "cereza", en: "cherry", pt: "cereja"},
+        // Verduras y Hortalizas
+        {es: "patata", en: "potato", pt: "batata"},
+        {es: "tomate", en: "tomato", pt: "tomate"},
+        {es: "cebolla", en: "onion", pt: "cebola"},
+        {es: "ajo", en: "garlic", pt: "alho"},
+        {es: "zanahoria", en: "carrot", pt: "cenoura"},
+        {es: "lechuga", en: "lettuce", pt: "alface"},
+        {es: "espinaca", en: "spinach", pt: "espinafre"},
+        {es: "pepino", en: "cucumber", pt: "pepino"},
+        {es: "pimiento", en: "pepper", pt: "pimentão"},
+        {es: "maíz", en: "corn", pt: "milho"},
+        {es: "brócoli", en: "broccoli", pt: "brócolis"},
+        {es: "calabaza", en: "pumpkin", pt: "abóbora"},
+        {es: "yuca / mandioca", en: "cassava", pt: "mandioca"},
+        // Carnes y Pescados
+        {es: "pollo", en: "chicken", pt: "frango"},
+        {es: "carne de vacuno", en: "beef", pt: "carne de vaca"},
+        {es: "cerdo", en: "pork", pt: "porco"},
+        {es: "jamón", en: "ham", pt: "presunto"},
+        {es: "salchicha", en: "sausage", pt: "salsicha"},
+        {es: "atún", en: "tuna", pt: "atum"},
+        {es: "salmón", en: "salmon", pt: "salmão"},
+        {es: "gamba / camarón", en: "shrimp", pt: "camarão"},
+        {es: "bacalao", en: "cod", pt: "bacalhau"},
+        // Lácteos y Básicos
+        {es: "queso", en: "cheese", pt: "queijo"},
+        {es: "mantequilla", en: "butter", pt: "manteiga"},
+        {es: "yogur", en: "yogurt", pt: "iogurte"},
+        {es: "nata / crema de leche", en: "cream", pt: "creme de leite"},
+        {es: "pan", en: "bread", pt: "pão"},
+        {es: "arroz", en: "rice", pt: "arroz"},
+        {es: "pasta / fideos", en: "pasta", pt: "massa"},
+        {es: "huevo", en: "egg", pt: "ovo"},
+        {es: "harina", en: "flour", pt: "farinha"},
+        {es: "aceite", en: "oil", pt: "aazeite"},
+        {es: "frijoles / judías", en: "beans", pt: "feijão"},
+        // Dulces, Bebidas y Varios
+        {es: "azúcar", en: "sugar", pt: "açúcar"},
+        {es: "sal", en: "salt", pt: "sal"},
+        {es: "pimienta", en: "pepper", pt: "pimenta"},
+        {es: "miel", en: "honey", pt: "mel"},
+        {es: "chocolate", en: "chocolate", pt: "chocolate"},
+        {es: "galleta", en: "cookie", pt: "biscoito"},
+        {es: "pastel / tarta", en: "cake", pt: "bolo"},
+        {es: "helado", en: "ice cream", pt: "sorvete"},
+        {es: "café", en: "coffee", pt: "café"},
+        {es: "té", en: "tea", pt: "chá"},
+        {es: "zumo / jugo", en: "juice", pt: "suco"},
+        {es: "agua", en: "water", pt: "água"},
+        {es: "cerveza", en: "beer", pt: "cerveja"},
+        {es: "vino", en: "wine", pt: "vinho"}
+      ]
+    },
+    { 
+      id: "verbs", 
+      emoji: "🔤", 
+      name: { es: "Verbos Útiles (A-Z)", en: "Useful Verbs (A-Z)" }, 
+      words: [
+        {es: "abrir", en: "to open", pt: "abrir"},
+        {es: "andar / caminar", en: "to walk", pt: "andar"},
+        {es: "aprender", en: "to learn", pt: "aprender"},
+        {es: "ayudar", en: "to help", pt: "ajudar"},
+        {es: "beber", en: "to drink", pt: "beber"},
+        {es: "buscar", en: "to look for", pt: "procurar"},
+        {es: "cambiar", en: "to change", pt: "mudar"},
+        {es: "cerrar", en: "to close", pt: "fechar"},
+        {es: "comer", en: "to eat", pt: "comer"},
+        {es: "comprar", en: "to buy", pt: "comprar"},
+        {es: "conocer", en: "to know (people/places)", pt: "conhecer"},
+        {es: "correr", en: "to run", pt: "correr"},
+        {es: "dar", en: "to give", pt: "dar"},
+        {es: "decir", en: "to say / tell", pt: "dizer"},
+        {es: "dormir", en: "to sleep", pt: "dormir"},
+        {es: "escribir", en: "to write", pt: "escrever"},
+        {es: "escuchar", en: "to listen", pt: "ouvir"},
+        {es: "esperar", en: "to wait / hope", pt: "esperar"},
+        {es: "estar", en: "to be (location/state)", pt: "estar"},
+        {es: "estudiar", en: "to study", pt: "estudar"},
+        {es: "hacer", en: "to do / make", pt: "fazer"},
+        {es: "hablar", en: "to speak / talk", pt: "falar"},
+        {es: "ir", en: "to go", pt: "ir"},
+        {es: "jugar", en: "to play (games)", pt: "jogar"},
+        {es: "leer", en: "to read", pt: "ler"},
+        {es: "limpiar", en: "to clean", pt: "limpar"},
+        {es: "llegar", en: "to arrive", pt: "chegar"},
+        {es: "mirar / ver", en: "to watch / look", pt: "olhar"},
+        {es: "necesitar", en: "to need", pt: "precisar"},
+        {es: "pagar", en: "to pay", pt: "pagar"},
+        {es: "pensar", en: "to think", pt: "pensar"},
+        {es: "poder", en: "to be able / can", pt: "poder"},
+        {es: "poner", en: "to put", pt: "colocar"},
+        {es: "preferir", en: "to prefer", pt: "preferir"},
+        {es: "querer", en: "to want / love", pt: "querer"},
+        {es: "saber", en: "to know (facts/skills)", pt: "saber"},
+        {es: "salir", en: "to go out / leave", pt: "sair"},
+        {es: "ser", en: "to be (permanent)", pt: "ser"},
+        {es: "tener", en: "to have", pt: "ter"},
+        {es: "trabajar", en: "to work", pt: "trabalhar"},
+        {es: "usar / utilizar", en: "to use", pt: "usar"},
+        {es: "vender", en: "to sell", pt: "vender"},
+        {es: "venir", en: "to come", pt: "vir"},
+        {es: "ver", en: "to see", pt: "ver"},
+        {es: "viajar", en: "to travel", pt: "viajar"},
+        {es: "vivir", en: "to live", pt: "viver"}
+      ]
+    },
+    { 
+      id: "nature", 
+      emoji: "🌿", 
+      name: { es: "Naturaleza y Clima", en: "Nature & Weather" }, 
+      words: [
+        {es: "árbol", en: "tree", pt: "árvore"},
+        {es: "bosque / selva", en: "forest / jungle", pt: "floresta"},
+        {es: "flor", en: "flower", pt: "flor"},
+        {es: "planta", en: "plant", pt: "planta"},
+        {es: "hoja", en: "leaf", pt: "folha"},
+        {es: "río", en: "river", pt: "rio"},
+        {es: "mar / océano", en: "sea / ocean", pt: "mar"},
+        {es: "playa", en: "beach", pt: "praia"},
+        {es: "lago", en: "lake", pt: "lago"},
+        {es: "cascada", en: "waterfall", pt: "cachoeira"},
+        {es: "montaña", en: "mountain", pt: "montanha"},
+        {es: "sol", en: "sun", pt: "sol"},
+        {es: "luna", en: "moon", pt: "lua"},
+        {es: "estrella", en: "star", pt: "estrela"},
+        {es: "cielo", en: "sky", pt: "céu"},
+        {es: "nube", en: "cloud", pt: "nuvem"},
+        {es: "lluvia", en: "rain", pt: "chuva"},
+        {es: "viento", en: "wind", pt: "vento"},
+        {es: "nieve", en: "snow", pt: "neve"},
+        {es: "fuego", en: "fire", pt: "fogo"},
+        {es: "tierra / suelo", en: "earth / ground", pt: "terra"},
+        {es: "isla", en: "island", pt: "ilha"},
+        {es: "campo", en: "countryside / field", pt: "campo"},
+        {es: "calor", en: "heat", pt: "calor"},
+        {es: "frío", en: "cold", pt: "frio"}
+      ]
+    },
+    { 
+      id: "transport", 
+      emoji: "🚌", 
+      name: { es: "Transporte y Vía", en: "Transport & Road" }, 
+      words: [
+        {es: "coche / auto", en: "car", pt: "carro"},
+        {es: "autobús", en: "bus", pt: "ônibus"},
+        {es: "bicicleta", en: "bicycle", pt: "bicicleta"},
+        {es: "tren", en: "train", pt: "trem"},
+        {es: "avión", en: "airplane", pt: "avião"},
+        {es: "barco", en: "boat", pt: "barco"},
+        {es: "moto", en: "motorcycle", pt: "moto"},
+        {es: "metro", en: "subway", pt: "metrô"},
+        {es: "camión", en: "truck", pt: "caminhão"},
+        {es: "taxi", en: "taxi", pt: "táxi"},
+        {es: "helicóptero", en: "helicopter", pt: "helicóptero"},
+        {es: "tranvía", en: "tram", pt: "bonde"},
+        {es: "calle", en: "street", pt: "rua"},
+        {es: "avenida", en: "avenue", pt: "avenida"},
+        {es: "carretera", en: "highway", pt: "estrada"},
+        {es: "estación", en: "station", pt: "estação"},
+        {es: "aeropuerto", en: "airport", pt: "aeroporto"},
+        {es: "puerto", en: "port", pt: "porto"},
+        {es: "semáforo", en: "traffic light", pt: "semáforo"},
+        {es: "pasaje / billete", en: "ticket", pt: "passagem"}
+      ]
+    },
+    { 
+      id: "animals", 
+      emoji: "🐶", 
+      name: { es: "Animales", en: "Animals" }, 
+      words: [
+        {es: "perro", en: "dog", pt: "cachorro"},
+        {es: "gato", en: "cat", pt: "gato"},
+        {es: "pájaro", en: "bird", pt: "pássaro"},
+        {es: "pez", en: "fish", pt: "peixe"},
+        {es: "caballo", en: "horse", pt: "cavalo"},
+        {es: "vaca", en: "cow", pt: "vaca"},
+        {es: "cerdo", en: "pig", pt: "porco"},
+        {es: "oveja", en: "sheep", pt: "ovelha"},
+        {es: "mono", en: "monkey", pt: "macaco"},
+        {es: "tortuga", en: "turtle", pt: "tartaruga"},
+        {es: "jaguar / onza", en: "jaguar", pt: "onça-pintada"},
+        {es: "capibara", en: "capybara", pt: "capivara"},
+        {es: "caimán / jacaré", en: "alligator", pt: "jacaré"},
+        {es: "león", en: "lion", pt: "leão"},
+        {es: "tigre", en: "tiger", pt: "tigre"},
+        {es: "elefante", en: "elephant", pt: "elefante"},
+        {es: "oso", en: "bear", pt: "urso"},
+        {es: "serpiente", en: "snake", pt: "cobra"},
+        {es: "mariposa", en: "butterfly", pt: "borboleta"},
+        {es: "abeja", en: "bee", pt: "abelha"},
+        {es: "tiburon", en: "shark", pt: "tubarão"},
+        {es: "delfín", en: "dolphin", pt: "golfinho"}
+      ]
+    },
+    { 
+      id: "home", 
+      emoji: "🏠", 
+      name: { es: "Hogar y Día a Día", en: "Home & Daily Life" }, 
+      words: [
+        {es: "mesa", en: "table", pt: "mesa"},
+        {es: "silla", en: "chair", pt: "cadeira"},
+        {es: "llave", en: "key", pt: "chave"},
+        {es: "cama", en: "bed", pt: "cama"},
+        {es: "ventana", en: "window", pt: "janela"},
+        {es: "puerta", en: "door", pt: "porta"},
+        {es: "teléfono móvil", en: "cellphone", pt: "celular"},
+        {es: "ordenador / computadora", en: "computer", pt: "computador"},
+        {es: "televisión", en: "television", pt: "televisão"},
+        {es: "sofá", en: "sofa", pt: "sofá"},
+        {es: "armario", en: "closet", pt: "armário"},
+        {es: "espejo", en: "mirror", pt: "espelho"},
+        {es: "lámpara", en: "lamp", pt: "lâmpada"},
+        {es: "reloj", en: "clock / watch", pt: "relógio"},
+        {es: "vaso", en: "glass", pt: "copo"},
+        {es: "plato", en: "plate", pt: "prato"},
+        {es: "cuchara", en: "spoon", pt: "colher"},
+        {es: "tenedor", en: "fork", pt: "garfo"},
+        {es: "cuchillo", en: "knife", pt: "faca"},
+        {es: "cepillo de dientes", en: "toothbrush", pt: "escova de dente"},
+        {es: "toalla", en: "towel", pt: "toalha"},
+        {es: "jabón", en: "soap", pt: "sabonete"},
+        {es: "nevera", en: "refrigerator", pt: "geladeira"},
+        {es: "cocina / estufa", en: "stove", pt: "fogão"}
+      ]
+    }
+  ],
+  texts: [
+    { id:"tech", emoji:"📰", title:{es:"Noticia: Tecnologia na Amazônia",en:"News: Technology in the Amazon"},
+      body:"Pesquisadores brasileiros usam drones para monitorar a floresta amazônica. A tecnologia ajuda a encontrar áreas de desmatamento mais rápido. Agora, comunidades locais também recebem os dados pelo celular." },
+    { id:"fable", emoji:"🐢", title:{es:"Fábula: A tartaruga e o macaco",en:"Fable: The turtle and the monkey"},
+      body:"Um dia, um macaco riu de uma tartaruga porque ela andava devagar. A tartaruga disse: vamos fazer uma corrida. O macaco parou para comer bananas e dormiu. A tartaruga seguiu firme e ganhou. Devagar e sempre se chega longe." },
+    { id:"music", emoji:"🎶", title:{es:"Cultura: A música do Brasil",en:"Culture: The music of Brazil"},
+      body:"A música brasileira é cheia de ritmo e alegria. O samba nasceu no Rio de Janeiro e a bossa nova conquistou o mundo. Todo ano, no Carnaval, as ruas se enchem de tambores, cores e muita dança." },
+    { id:"nature", emoji:"🌿", title:{es:"Naturaleza: O Pantanal",en:"Nature: The Pantanal"},
+      body:"O Pantanal é a maior planície alagada do mundo. Lá vivem jacarés, capivaras e a famosa onça-pintada. Muitos turistas visitam a região para ver os animais de perto e tirar fotos." }
+  ]
+};
+
+/* ============ TEXTOS DE LA INTERFAZ ============ */
+const UI = {
+  es:{vocab:"Vocabulario",reader:"Lector",typing:"Mecanografía",lang:"Idioma",
+    cats:"Elige una categoría",words:"palabras",back:"← Volver",native:"Español",
+    size:"Tamaño",small:"Pequeño",medium:"Mediano",large:"Grande",play:"▶ Escuchar todo",stop:"■ Parar",
+    tip:"Toca una palabra para escucharla",practice:"Practicar mecanografía con este texto",
+    pick:"Texto:",restart:"Reiniciar",speed:"PPM",acc:"Precisión",time:"Tiempo",
+    ph:"Empieza a escribir aquí…",done:"¡Completado! 🎉",langT:"Tu idioma nativo",langD:"Elige el idioma para las traducciones",readT:"Biblioteca de lectura"},
+  en:{vocab:"Vocabulary",reader:"Reader",typing:"Typing",lang:"Language",
+    cats:"Choose a category",words:"words",back:"← Back",native:"English",
+    size:"Size",small:"Small",medium:"Medium",large:"Large",play:"▶ Listen to all",stop:"■ Stop",
+    tip:"Tap a word to hear it",practice:"Practice typing with this text",
+    pick:"Text:",restart:"Restart",speed:"WPM",acc:"Accuracy",time:"Time",
+    ph:"Start typing here…",done:"Completed! 🎉",langT:"Your native language",langD:"Choose the language for translations",readT:"Reading library"}
+};
+
+/* ============ ESTADO ============ */
+const state = { lang:"es", tab:"vocab", cat:null, text:null, size:"m", sel:null, typingId:"tech",
+  t:{start:null,timer:null} };
+const $ = s => document.querySelector(s);
+const tr = k => UI[state.lang][k];
+
+/* ============ VOZ (speechSynthesis pt-BR) ============ */
+function speak(text){
+  if(!("speechSynthesis" in window)) return alert("Tu navegador no soporta síntesis de voz.");
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "pt-BR"; u.rate = .9;
+  const v = speechSynthesis.getVoices().find(v => v.lang.replace("_","-") === "pt-BR");
+  if(v) u.voice = v;
+  speechSynthesis.speak(u);
+}
+
+/* ============ NAVEGACIÓN ============ */
+function renderNav(){
+  const tabs = ["vocab","reader","typing","lang"];
+  $("#nav").innerHTML = '<span class="logo">🇧🇷 PT-BR</span>' +
+    tabs.map(t => `<button class="${state.tab===t?"on":""}" data-t="${t}">${tr(t)}</button>`).join("");
+  $("#nav").querySelectorAll("button").forEach(b => b.onclick = () => go(b.dataset.t));
+}
+function go(t){
+  stopTimer(); speechSynthesis.cancel();
+  state.tab = t; render();
+}
+function render(){
+  renderNav();
+  ({vocab:viewVocab, reader:viewReader, typing:viewTyping, lang:viewLang})[state.tab]();
+  window.scrollTo(0,0);
+}
+
+/* ============ 1. VOCABULARIO ============ */
+function viewVocab(){
+  const m = $("#main");
+  if(!state.cat){
+    m.innerHTML = `<h2>${tr("cats")}</h2><div class="grid">` + APP_DATA.categories.map(c =>
+      `<div class="card" data-id="${c.id}"><div class="e">${c.emoji}</div><b>${c.name[state.lang]}</b><br><small>${c.words.length} ${tr("words")}</small></div>`).join("") + "</div>";
+    m.querySelectorAll(".card").forEach(c => c.onclick = () => { state.cat = c.dataset.id; render(); });
+    return;
+  }
+  const c = APP_DATA.categories.find(x => x.id === state.cat);
+  m.innerHTML = `<button class="btn alt" id="bk">${tr("back")}</button><h2>${c.emoji} ${c.name[state.lang]}</h2>` +
+    c.words.map((w,i) => `<div class="row"><span class="n">${w[state.lang]}</span><span class="p">${w.pt}</span>
+      <button class="spk" data-i="${i}" aria-label="🔊">🔊</button></div>`).join("");
+  $("#bk").onclick = () => { state.cat = null; render(); };
+  m.querySelectorAll(".spk").forEach(b => b.onclick = () => speak(c.words[b.dataset.i].pt));
+}
+
+/* ============ 2. LECTOR ============ */
+function lookup(word){
+  const w = word.toLowerCase().replace(/[.,;:!?]/g,"");
+  for(const c of APP_DATA.categories) for(const x of c.words)
+    if(x.pt.toLowerCase() === w || x.pt.toLowerCase().split(" ")[0] === w) return x[state.lang];
+  return null;
+}
+function viewReader(){
+  const m = $("#main");
+  if(!state.text){
+    m.innerHTML = `<h2>${tr("readT")}</h2><div class="grid">` + APP_DATA.texts.map(t =>
+      `<div class="card" data-id="${t.id}"><div class="e">${t.emoji}</div><b>${t.title[state.lang]}</b></div>`).join("") + "</div>";
+    m.querySelectorAll(".card").forEach(c => c.onclick = () => { state.text = c.dataset.id; render(); });
+    return;
+  }
+  const t = APP_DATA.texts.find(x => x.id === state.text);
+  const words = t.body.split(/(\s+)/).map(p => /\S/.test(p) ? `<span class="w">${p}</span>` : p).join("");
+  m.innerHTML = `<button class="btn alt" id="bk">${tr("back")}</button><h2>${t.emoji} ${t.title[state.lang]}</h2>
+    <div class="bar"><button class="btn" id="pl">${tr("play")}</button><button class="btn alt" id="st">${tr("stop")}</button>
+    <label>${tr("size")}: <select id="sz"><option value="s">${tr("small")}</option><option value="m">${tr("medium")}</option><option value="l">${tr("large")}</option></select></label></div>
+    <div id="tip">${tr("tip")}</div>
+    <div class="reader s-${state.size}" id="rd">${words}</div>
+    <button class="btn big" id="pr">⌨️ ${tr("practice")}</button>`;
+  $("#sz").value = state.size;
+  $("#sz").onchange = e => { state.size = e.target.value; $("#rd").className = "reader s-" + state.size; };
+  $("#bk").onclick = () => { state.text = null; speechSynthesis.cancel(); render(); };
+  $("#pl").onclick = () => speak(t.body);
+  $("#st").onclick = () => speechSynthesis.cancel();
+  $("#pr").onclick = () => { state.typingId = t.id; go("typing"); };
+  $("#rd").querySelectorAll(".w").forEach(s => s.onclick = () => {
+    $("#rd").querySelectorAll(".sel").forEach(x => x.classList.remove("sel"));
+    s.classList.add("sel");
+    const tl = lookup(s.textContent);
+    $("#tip").textContent = s.textContent.replace(/[.,;:!?]/g,"") + (tl ? "  →  " + tl : "");
+    speak(s.textContent.replace(/[.,;:!?]/g,""));
+  });
+}
+
+/* ============ 3. MECANOGRAFÍA ============ */
+function stopTimer(){ clearInterval(state.t.timer); state.t.timer = null; }
+function viewTyping(){
+  const m = $("#main");
+  m.innerHTML = `<h2>⌨️ ${tr("typing")}</h2>
+    <div class="bar"><label>${tr("pick")} <select id="ts">${APP_DATA.texts.map(t => `<option value="${t.id}">${t.title[state.lang]}</option>`).join("")}</select></label>
+    <button class="btn alt" id="rs">↺ ${tr("restart")}</button></div>
+    <div class="stats"><div class="stat"><b id="wpm">0</b>${tr("speed")}</div><div class="stat"><b id="ac">100%</b>${tr("acc")}</div><div class="stat"><b id="tm">0:00</b>${tr("time")}</div></div>
+    <div id="target"></div><textarea id="inp" placeholder="${tr("ph")}" autocomplete="off" autocapitalize="off" spellcheck="false"></textarea><div id="dn"></div>`;
+  $("#ts").value = state.typingId;
+  $("#ts").onchange = e => { state.typingId = e.target.value; resetTyping(); };
+  $("#rs").onclick = resetTyping;
+  $("#inp").oninput = onType;
+  resetTyping();
+}
+function resetTyping(){
+  stopTimer(); state.t.start = null;
+  $("#inp").value = ""; $("#inp").disabled = false;
+  $("#wpm").textContent = "0"; $("#ac").textContent = "100%"; $("#tm").textContent = "0:00"; $("#dn").textContent = "";
+  paint(""); $("#inp").focus();
+}
+function target(){ return APP_DATA.texts.find(t => t.id === state.typingId).body; }
+function paint(typed){
+  const tg = target();
+  $("#target").innerHTML = [...tg].map((ch,i) => {
+    let c = i < typed.length ? (typed[i] === ch ? "ok" : "ko") : (i === typed.length ? "cur" : "");
+    return `<span class="${c}">${ch === " " && c === "ko" ? "·" : ch}</span>`;
+  }).join("");
+}
+function onType(){
+  const typed = $("#inp").value, tg = target();
+  if(!state.t.start){
+    state.t.start = Date.now();
+    state.t.timer = setInterval(updateStats, 250);
+  }
+  paint(typed); updateStats();
+  if(typed.length >= tg.length){
+    stopTimer(); updateStats(); $("#inp").disabled = true; $("#dn").innerHTML = `<p class="done">${tr("done")}</p>`;
+  }
+}
+function updateStats(){
+  const typed = $("#inp").value, tg = target();
+  const secs = state.t.start ? (Date.now() - state.t.start)/1000 : 0;
+  let ok = 0; for(let i=0;i<typed.length;i++) if(typed[i]===tg[i]) ok++;
+  const wpm = secs > 0 ? Math.round((ok/5)/(secs/60)) : 0;
+  $("#wpm").textContent = wpm;
+  $("#ac").textContent = (typed.length ? Math.round(ok/typed.length*100) : 100) + "%";
+  $("#tm").textContent = Math.floor(secs/60) + ":" + String(Math.floor(secs%60)).padStart(2,"0");
+}
+
+/* ============ 4. IDIOMA NATIVO ============ */
+function viewLang(){
+  $("#main").innerHTML = `<h2>🌐 ${tr("langT")}</h2><p>${tr("langD")}</p><div class="lang">
+    <div class="card ${state.lang==="es"?"on":""}" data-l="es"><div class="e">🇪🇸</div><b>Español</b></div>
+    <div class="card ${state.lang==="en"?"on":""}" data-l="en"><div class="e">🇬🇧</div><b>English</b></div></div>`;
+  document.querySelectorAll(".lang .card").forEach(c => c.onclick = () => {
+    state.lang = c.dataset.l; document.documentElement.lang = state.lang; render();
+  });
+}
+
+/* ============ INICIO ============ */
+if("speechSynthesis" in window) speechSynthesis.getVoices();
+render();
+</script>
+</body>
+</html>
