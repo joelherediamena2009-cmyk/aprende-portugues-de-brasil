@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Falar Brasil — Aprende Portugués de Brasil</title>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:linear-gradient(135deg,#f0fdf4 0%,#f0f9ff 100%);color:#0f291e;min-height:100vh}
+.flip{perspective:1000px}
+.fi{position:relative;transition:transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);transform-style:preserve-3d}
+.fi.on{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:1.75rem;box-shadow:0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.05)}
+.back{transform:rotateY(180deg)}
+/* Custom scrollbar */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:9999px}
+
+/* Game canvas container styles */
+.rain-box {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(to bottom, #1e293b, #0f172a);
+  border-radius: 1.5rem;
+  height: 380px;
+}
+.falling-word {
+  position: absolute;
+  transform: translateX(-50%);
+  transition: top 0.05s linear;
+  white-space: nowrap;
+  user-select: none;
+}
+@keyframes pop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.12);opacity:1}100%{transform:scale(1)}}
+.cd{animation:pop .5s ease-out}
+@media (prefers-reduced-motion:reduce){.cd{animation:none}}
+</style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+<!-- HEADER -->
+<header class="bg-gradient-to-r from-emerald-700 via-emerald-600 to-teal-700 text-white shadow-lg sticky top-0 z-50 backdrop-blur-md bg-opacity-95">
+<div class="max-w-4xl mx-auto px-4 py-3.5 flex flex-col sm:flex-row items-center justify-between gap-3">
+<div class="flex items-center gap-2.5">
+<span class="text-2xl filter drop-shadow">🇧🇷</span>
+<div>
+<h1 class="text-lg font-extrabold tracking-tight">Falar Brasil</h1>
+<p class="text-xs text-emerald-100 opacity-90">Portugués brasileño práctico y natural</p>
+</div>
+</div>
+<nav id="nav" class="flex gap-1.5 bg-black/10 p-1 rounded-2xl w-full sm:w-auto justify-center flex-wrap"></nav>
+</div>
+</header>
+
+<!-- MAIN APP CONTAINER -->
+<main id="app" class="max-w-4xl mx-auto p-4 sm:p-6 w-full flex-1"></main>
+
+<!-- FOOTER -->
+<footer class="text-center py-6 text-xs text-slate-400 border-t border-emerald-900/5 mt-auto">
+Hecho con 💚 para aprender Portugués de Brasil · Sin barreras de acentos
+</footer>
+
+<script>
+// ===== DATOS AMPLIADOS =====
+const THEMES={
+ "Comida":[
+  ["🍞","pão","pan"],
+  ["🍚","arroz","arroz"],
+  ["🧀","queijo","queso"],
+  ["🍎","maçã","manzana"],
+  ["🥩","carne","carne"],
+  ["☕","café","café"],
+  ["🥚","ovo","huevo"],
+  ["🥛","leite","leche"],
+  ["🍌","banana","plátano"],
+  ["🍗","frango","pollo"],
+  ["🥗","salada","ensalada"],
+  ["🍊","laranja","naranja"]
+ ],
+ "Vehículos":[
+  ["🚌","ônibus","autobús"],
+  ["🚗","carro","coche"],
+  ["🚲","bicicleta","bicicleta"],
+  ["✈️","avião","avión"],
+  ["🚇","metrô","metro"],
+  ["🚢","navio","barco"],
+  ["🏍️","moto","moto"],
+  ["🚆","trem","tren"],
+  ["🚁","helicóptero","helicóptero"],
+  ["🚕","táxi","taxi"]
+ ],
+ "Ropa":[
+  ["👕","camiseta","camiseta"],
+  ["👖","calça","pantalón"],
+  ["👟","tênis","zapatillas"],
+  ["🧢","boné","gorra"],
+  ["🧦","meia","calcetín"],
+  ["👗","vestido","vestido"],
+  ["🧥","casaco","abrigo"],
+  ["👔","gravata","corbata"],
+  ["🩳","bermuda","bermudas"],
+  ["🕶️","óculos de sol","gafas de sol"]
+ ],
+ "Objetos":[
+  ["🔑","chave","llave"],
+  ["📱","celular","móvil"],
+  ["📖","livro","libro"],
+  ["☂️","guarda-chuva","paraguas"],
+  ["⌚","relógio","reloj"],
+  ["🎒","mochila","mochila"],
+  ["💻","computador","ordenador"],
+  ["🖊️","caneta","bolígrafo"],
+  ["👓","óculos","gafas"],
+  ["💳","cartão","tarjeta"]
+ ],
+ "Muebles":[
+  ["🛏️","cama","cama"],
+  ["🪑","cadeira","silla"],
+  ["🛋️","sofá","sofá"],
+  ["🚪","porta","puerta"],
+  ["🪟","janela","ventana"],
+  ["🍽️","mesa","mesa"],
+  ["🗄️","guarda-roupa","armario"],
+  ["💡","lâmpada","bombilla"],
+  ["🪞","espelho","espejo"],
+  ["🪴","vaso de planta","maceta"]
+ ],
+ "Cuerpo":[
+  ["❤️","coração","corazón"],
+  ["👁️","olho","ojo"],
+  ["✋","mão","mano"],
+  ["🦶","pé","pie"],
+  ["👂","orelha","oreja"],
+  ["👃","nariz","nariz"],
+  ["👄","boca","boca"],
+  ["🦷","dente","diente"],
+  ["💇","cabelo","pelo"],
+  ["🦵","perna","pierna"]
+ ],
+ "Naturaleza":[
+  ["☀️","sol","sol"],
+  ["🌧️","chuva","lluvia"],
+  ["🌳","árvore","árbol"],
+  ["🌊","praia","playa"],
+  ["🌸","flor","flor"],
+  ["🔥","fogo","fuego"],
+  ["⛰️","montanha","montaña"],
+  ["⭐","estrela","estrella"]
+ ],
+ "Animales":[
+  ["🐶","cachorro","perro"],
+  ["🐱","gato","gato"],
+  ["🐦","pássaro","pájaro"],
+  ["🦁","leão","león"],
+  ["🐵","macaco","mono"],
+  ["🐎","cavalo","caballo"],
+  ["🐠","peixe","pez"],
+  ["🐮","vaca","vaca"]
+ ]
+};
+
+const VERBS={
+ "Acciones diarias":[
+  ["🍽️","comer","comer",["como","come","comemos","comem"],["comi","comeu","comemos","comeram"],["comerei","comerá","comeremos","comerão"]],
+  ["💧","beber","beber",["bebo","bebe","bebemos","bebem"],["bebi","bebeu","bebemos","beberam"],["beberei","beberá","beberemos","beberão"]],
+  ["😴","dormir","dormir",["durmo","dorme","dormimos","dormem"],["dormi","dormiu","dormimos","dormiram"],["dormirei","dormirá","dormiremos","dormirão"]],
+  ["🏃","correr","correr",["corro","corre","corremos","correm"],["corri","correu","corremos","correram"],["correrei","correrá","correremos","correrão"]],
+  ["📖","ler","leer",["leio","lê","lemos","leem"],["li","leu","lemos","leram"],["lerei","lerá","leremos","lerão"]],
+  ["✍️","escrever","escribir",["escrevo","escreve","escrevemos","escrevem"],["escrevi","escreveu","escrevemos","escreveram"],["escreverei","escreverá","escreveremos","escreverão"]]
+ ],
+ "Esenciales":[
+  ["🗣️","falar","hablar",["falo","fala","falamos","falam"],["falei","falou","falamos","falaram"],["falarei","falará","falaremos","falarão"]],
+  ["🧠","entender","entender",["entendo","entende","entendemos","entendem"],["entendi","entendeu","entendemos","entenderam"],["entenderei","entenderá","entendemos","entenderão"]],
+  ["💡","saber","saber",["sei","sabe","sabemos","sabem"],["soube","soube","soubemos","souberam"],["saberei","saberá","saberemos","saberão"]],
+  ["👀","ver","ver",["vejo","vê","vemos","veem"],["vi","viu","vemos","viram"],["verei","verá","veremos","verão"]],
+  ["❓","querer","querer",["quero","quer","queremos","querem"],["quis","quis","quisemos","quiseram"],["quererei","quererá","quereremos","quererão"]]
+ ],
+ "Movimiento y Vida":[
+  ["🚶","andar","andar / caminar",["ando","anda","andamos","andam"],["andei","andou","andamos","andaram"],["andarei","andará","andaremos","andarão"]],
+  ["🛫","ir","ir",["vou","vai","vamos","vão"],["fui","foi","fomos","foram"],["irei","irá","iremos","irão"]],
+  ["🤝","ter","tener",["tenho","tem","temos","têm"],["tive","teve","tivemos","tiveram"],["terei","terá","teremos","terão"]],
+  ["✨","ser","ser",["sou","é","somos","são"],["fui","foi","fomos","foram"],["serei","será","seremos","serão"]],
+  ["🏠","estar","estar",["estou","está","estamos","estão"],["estive","esteve","estivemos","estiveram"],["estarei","estará","estaremos","estarão"]]
+ ]
+};
+
+const SLANG=[
+ ["Tudo bem?", "¿Todo bien?", "Saludo nacional por excelencia. Se usa al llegar a un sitio o para preguntar cómo va la vida. Se suele responder con outro «¡Tudo bem!» o «¡Tudo ótimo!»."],
+ ["Beleza!", "¡Genial! / ¡De acuerdo!", "Sirve tanto para decir que algo mola mucho («Essa música é pura beleza») como para aceptar un plan («¿Vamos ao cinema? — ¡Beleza!»)."],
+ ["Cara", "Tío / colega / pavo", "Palabra comodín para referirse a cualquier persona en confianza. Ej: «O cara é muito legal» (Ese tío es muy majo)."],
+ ["Legal", "Guay / chulo / simpático", "Muy utilizado para describir algo divertido, interesante o a una persona agradable."],
+ ["Nossa!", "¡Madre mía! / ¡Ostras!", "Abreviatura de *Nossa Senhora!*. Se usa constantemente para expresar sorpresa, asombro, alegría o sobresaltos."],
+ ["Valeu!", "¡Gracias!", "Despedida o agradecimiento informal muy rápido. Si te ayudan con algo en la calle, un «¡Valeu!» con una sonrisa es perfecto."],
+ ["Maneiro", "Mola / Chulísimo", "Sinónimo muy popular de *legal* para referirse a cosas modernas o experiencias divertidas."],
+ ["Ficar", "Quedar / enrollarse", "Ojo con este: en Brasil, además de quedar con alguien, *ficar com alguém* significa besarse o liarse con alguien de forma informal."],
+ ["Puxa-saco", "Pelota / Chupamedias", "Persona aduladora que intenta complacer siempre al jefe o a los profesores para ganar favor."],
+ ["Zoação", "Broma / Vacilada", "Viene del verbo *zoar* (bromear o vacilar). Se usa cuando la gente está de risas o tomando el pelo a alguien sin maldad."]
+];
+
+const SURV={
+ "Restaurante e Bar":[
+  ["Uma mesa para dois, por favor.", "Una mesa para dos, por favor."],
+  ["Pode trazer o cardápio, por favor?", "¿Puede traer la carta, por favor?"],
+  ["O que você me recomenda?", "¿Qué me recomiendas?"],
+  ["Eu gostaria de um chope bem gelado.", "Quisiera una cerveza de barril bien fría."],
+  ["A conta, por favor. Posso pagar com cartão?", "La cuenta, por favor. ¿Puedo pagar con tarjeta?"]
+ ],
+ "Transporte e Uber":[
+  ["Quanto custa a corrida até o centro?", "¿Cuánto cuesta el trayecto hasta el centro?"],
+  ["Pode me deixar bem aqui, por favor.", "Puede dejarme justo aquí, por favor."],
+  ["Onde fica a estação de metrô mais próxima?", "¿Dónde está la estación de metro más cercana?"],
+  ["Vou pedir um Uber para ir embora.", "Voy a pedir un Uber para marcharme."],
+  ["O ônibus passa por Copacabana?", "¿El autobús pasa por Copacabana?"]
+ ],
+ "De Compras (Shopping)":[
+  ["Quanto custa isto?", "¿Cuánto cuesta esto?"],
+  ["Tem um tamanho menor / maior?", "¿Tiene una talla más pequeña / más grande?"],
+  ["Posso provar esta roupa?", "¿Puedo probarme esta roupa?"],
+  ["Tem desconto se pagar à vista?", "¿Hay descuento si pago al contado?"],
+  ["Estou só dando uma olhadita, obrigado.", "Solo estoy echando un vistazo, gracias."]
+ ],
+ "Emergencias e Calle":[
+  ["Com licença, onde fica o banheiro?", "Disculpe, ¿dónde está el baño?"],
+  ["Pode falar um pouco mais devagar, por favor?", "¿Puede hablar un poco más despacio, por favor?"],
+  ["Não entendi muito bem. Pode repetir?", "No lo entendí muy bien. ¿Puede repetir?"],
+  ["Socorro! Preciso de ajuda.", "¡Socorro! Necesito ayuda."],
+  ["Onde posso encontrar uma farmácia aberta?", "¿Dónde puedo encontrar una farmacia abierta?"]
+ ]
+};
+
+// ===== CONTENIDO EXTRA =====
+const EXTRA={
+ "Comida":[["🍝","macarrão","pasta"],["🍕","pizza","pizza"],["🍔","hambúrguer","hamburguesa"],["🍟","batata frita","patatas fritas"],["🍫","chocolate","chocolate"],["🍰","bolo","tarta / pastel"],["🍦","sorvete","helado"],["🥔","batata","patata"],["🍅","tomate","tomate"],["🥕","cenoura","zanahoria"],["🍇","uva","uva"],["🍓","morango","fresa"],["🍉","melancia","sandía"],["🧃","suco","zumo"],["🍺","cerveja","cerveza"],["🍍","abacaxi","piña"],["🥑","abacate","aguacate"],["🍋","limão","limón"]],
+ "Vehículos":[["🚚","caminhão","camión"],["🛴","patinete","patinete"],["⛵","veleiro","velero"],["🚑","ambulância","ambulancia"],["🚓","viatura","coche de policía"],["🚜","trator","tractor"],["🛶","canoa","canoa"],["🚤","lancha","lancha"],["🚋","bonde","tranvía"],["🚐","van","furgoneta"]],
+ "Ropa":[["🧤","luva","guante"],["🧣","cachecol","bufanda"],["👙","biquíni","biquini"],["🩱","maiô","bañador"],["👡","sandália","sandalia"],["🥾","bota","bota"],["👜","bolsa","bolso"],["🎩","chapéu","sombrero"],["💍","anel","anillo"],["👚","blusa","blusa"],["🛌","pijama","pijama"]],
+ "Objetos":[["📷","câmera","cámara"],["🎧","fone de ouvido","auriculares"],["🔦","lanterna","linterna"],["✂️","tesoura","tijeras"],["📺","televisão","televisión"],["💰","dinheiro","dinero"],["👛","carteira","cartera / billetera"],["📦","caixa","caja"],["🧼","sabonete","jabón"],["🧹","vassoura","escoba"],["🎁","presente","regalo"],["📝","caderno","cuaderno"],["⏰","despertador","despertador"]],
+ "Muebles":[["🚿","chuveiro","ducha"],["🛁","banheira","bañera"],["🧊","geladeira","nevera"],["🍳","fogão","cocina (fogones)"],["🛌","travesseiro","almohada"],["🖼️","quadro","cuadro"],["🪜","escada","escalera"],["🔌","tomada","enchufe"],["🚰","pia","lavabo / fregadero"],["🗄️","estante","estantería"],["🧶","tapete","alfombra"],["🛏️","cobertor","manta"]],
+ "Cuerpo":[["🧠","cérebro","cerebro"],["💪","braço","brazo"],["🦴","osso","hueso"],["👅","língua","lengua"],["🙂","rosto","cara"],["💅","unha","uña"],["🫁","pulmão","pulmón"],["🦵","joelho","rodilla"],["🤷","ombro","hombro"],["🦒","pescoço","cuello"],["☝️","dedo","dedo"],["🖐️","pele","piel"]],
+ "Naturaleza":[["🌙","lua","luna"],["☁️","nuvem","nube"],["❄️","neve","nieve"],["💨","vento","viento"],["⚡","raio","rayo"],["🌈","arco-íris","arcoíris"],["🏞️","rio","río"],["🏝️","ilha","isla"],["🌲","floresta","bosque / selva"],["🏜️","deserto","desierto"],["🪨","pedra","piedra"],["🍂","folha","hoja"],["🌍","terra","tierra"],["🌻","girassol","girasol"]],
+ "Animales":[["🐘","elefante","elefante"],["🐯","tigre","tigre"],["🐻","urso","oso"],["🐍","cobra","serpiente"],["🐸","sapo","sapo / rana"],["🐢","tartaruga","tortuga"],["🐷","porco","cerdo"],["🐑","ovelha","oveja"],["🐔","galinha","gallina"],["🐭","rato","ratón"],["🐰","coelho","conejo"],["🦋","borboleta","mariposa"],["🐝","abelha","abeja"],["🦈","tubarão","tiburón"],["🐬","golfinho","delfín"],["🐊","jacaré","caimán"],["🦜","papagaio","loro"],["🐆","onça","jaguar"]]
+};
+Object.entries(EXTRA).forEach(([k,a])=>THEMES[k].push(...a));
+
+const reg=(e,inf,es,pe)=>{
+ const t=inf.slice(-2), s=inf.slice(0,-2), ar=t==="ar";
+ const eu=!ar?s+"i":s.endsWith("c")?s.slice(0,-1)+"quei":s.endsWith("g")?s+"uei":s.endsWith("ç")?s.slice(0,-1)+"cei":s+"ei";
+ return [e,inf,es,
+  [pe||s+"o",s+(ar?"a":"e"),s+(ar?"a":t==="er"?"e":"i")+"mos",s+(ar?"am":"em")],
+  [eu,s+(ar?"ou":t==="er"?"eu":"iu"),s+(ar?"a":t==="er"?"e":"i")+"mos",s+(ar?"aram":t==="er"?"eram":"iram")],
+  [inf+"ei",inf+"á",inf+"emos",inf+"ão"]];
+};
+const irr=(e,i,es,a,b,c)=>[e,i,es,a.split(" "),b.split(" "),c.split(" ")];
+const NEWV={
+ "Acciones diarias":[reg("💼","trabalhar","trabajar"),reg("📚","estudar","estudiar"),reg("🍳","cozinhar","cocinar"),reg("🧼","lavar","lavar"),reg("🧹","limpar","limpiar"),reg("🚪","abrir","abrir"),reg("🔒","fechar","cerrar"),reg("⏰","acordar","despertar(se)"),reg("🛠️","usar","usar"),reg("👂","ouvir","oír","ouço")],
+ "Esenciales":[irr("💪","poder","poder","posso pode podemos podem","pude pôde pudemos puderam","poderei poderá poderemos poderão"),irr("🔨","fazer","hacer","faço faz fazemos fazem","fiz fez fizemos fizeram","farei fará faremos farão"),irr("💬","dizer","decir","digo diz dizemos dizem","disse disse dissemos disseram","direi dirá diremos dirão"),irr("🎁","dar","dar","dou dá damos dão","dei deu demos deram","darei dará daremos darão"),reg("👍","gostar","gustar"),reg("🆘","precisar","necesitar"),reg("🤔","pensar","pensar"),reg("🤝","conhecer","conocer","conheço"),reg("🙋","ajudar","ayudar"),reg("📣","chamar","llamar"),reg("🙏","pedir","pedir","peço")],
+ "Movimiento y Vida":[reg("🛬","chegar","llegar"),irr("↗️","sair","salir","saio sai saímos saem","saí saiu saímos saíram","sairei sairá sairemos sairão"),irr("📍","vir","venir","venho vem vimos vêm","vim veio viemos vieram","virei virá viremos virão"),reg("🧳","viajar","viajar"),reg("🏡","morar","vivir (residir)"),reg("🌱","viver","vivir"),reg("📌","ficar","quedarse / estar"),reg("🔍","encontrar","encontrar"),irr("📦","trazer","traer","trago traz trazemos trazem","trouxe trouxe trouxemos trouxeram","trarei trará traremos trarão"),reg("🚗","dirigir","conducir","dirijo"),irr("📥","pôr","poner","ponho põe pomos põem","pus pôs pusemos puseram","porei porá poremos porão")],
+ "Ocio y Compras":[reg("🛒","comprar","comprar"),reg("🏷️","vender","vender"),reg("💳","pagar","pagar"),reg("🎮","jogar","jugar"),reg("🎤","cantar","cantar"),reg("💃","dançar","bailar"),reg("🏊","nadar","nadar"),reg("🏆","ganhar","ganar"),reg("😞","perder","perder","perco"),reg("🔎","procurar","buscar"),reg("📬","receber","recibir"),reg("🎓","aprender","aprender")],
+ "Emociones y Cambios":[reg("❤️","amar","amar"),reg("😢","chorar","llorar"),reg("😊","sorrir","sonreír"),reg("😔","sentir","sentir","sinto"),reg("🫥","esquecer","olvidar","esqueço"),reg("⭐","preferir","preferir"),reg("🏁","começar","empezar"),reg("✅","terminar","terminar"),reg("⚖️","decidir","decidir"),reg("🤨","perguntar","preguntar"),reg("💭","responder","responder"),reg("⌛","esperar","esperar")]
+};
+Object.entries(NEWV).forEach(([k,a])=>{(VERBS[k]=VERBS[k]||[]).push(...a)});
+
+// ===== MECANOGRAFÍA =====
+const TY=[
+ ["Fácil","Bom dia! Eu me chamo Ana e moro em São Paulo. Eu gosto de café com pão de queijo de manhã. Hoje o dia está lindo e o sol está forte."],
+ ["Fácil","No Brasil, a família é muito importante. No domingo, todo mundo almoça junto: arroz, feijão, carne e salada. Depois, as crianças brincam no quintal."],
+ ["Medio","O Rio de Janeiro é famoso pelas praias de Copacabana e Ipanema. Os turistas adoram subir o Pão de Açúcar para ver o pôr do sol e tirar fotos da cidade."],
+ ["Medio","Ontem eu fui ao mercado com meu irmão. Compramos manga, mamão, tomate e cebola. Na volta, pegamos o ônibus porque estava chovendo muito."],
+ ["Medio","A Amazônia é a maior floresta tropical do mundo. Lá vivem onças, jacarés, preguiças e milhares de pássaros coloridos que encantam quem visita a região."],
+ ["Difícil","Você já pensou em aprender uma língua nova? No começo parece difícil, mas, com prática diária, você vai entender conversas, ler notícias e fazer amigos em outro país."],
+ ["Difícil","O Carnaval é a maior festa popular do Brasil. Durante vários dias, as ruas se enchem de música, dança e fantasias, e as escolas de samba desfilam com muita alegria."],
+ ["Difícil","Quando cheguei ao aeroporto, percebi que tinha esquecido o passaporte em casa. Liguei para minha mãe, e ela me trouxe os documentos a tempo do voo."]
+];
+const nk=c=>c===" "?" ":c.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]/g,"");
+const tyNew=t=>({t,st:0,last:0,err:0,keys:0,done:null});
+function tySet(t){S.ty=tyNew(t);render()}
+function tipo(){
+ if(!S.ty)S.ty=tyNew(0);
+ const lv={"Fácil":"bg-emerald-100 text-emerald-800","Medio":"bg-amber-100 text-amber-800","Difícil":"bg-rose-100 text-rose-800"};
+ return `<div class="max-w-2xl mx-auto">
+ <div class="mb-5 text-center"><h2 class="text-2xl font-extrabold text-slate-800">Mecanografía en portugués</h2>
+ <p class="text-sm text-slate-500 mt-1">Escribe el texto sin preocuparte por tildes, cedillas ni signos: con las letras correctas basta (ã = a, ç = c).</p></div>
+ <div class="flex flex-wrap gap-2 justify-center mb-4">${TY.map((x,i)=>`<button onclick="tySet(${i})" class="px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${S.ty.t===i?'bg-emerald-600 text-white border-emerald-600 shadow':'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}">Texto ${i+1} <span class="ml-1 px-1.5 py-0.5 rounded-full ${lv[x[0]]}">${x[0]}</span></button>`).join("")}</div>
+ <div id="tyshow" class="bg-white rounded-3xl p-5 sm:p-6 shadow-sm border border-slate-100 text-lg sm:text-xl leading-relaxed font-medium break-words"></div>
+ <textarea id="tyin" rows="3" oninput="tyUpdate()" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Empieza a escribir aquí..." class="w-full mt-4 border-2 border-slate-200 focus:border-emerald-500 rounded-2xl px-4 py-3 text-base focus:outline-none transition-colors"></textarea>
+ <div id="tystat" class="mt-4"></div></div>`;
+}
+function tyInit(){tyUpdate();const e=$("tyin");if(e&&!S.ty.done)e.focus()}
+function tyUpdate(){
+ const T=TY[S.ty.t][1], e=$("tyin"), ks=[...T].map(nk), target=ks.join("");
+ let tv=[...e.value].map(nk).join("").replace(/^ +/,"").replace(/ {2,}/g," ");
+ if(S.ty.done){tv=target}
+ if(!S.ty.st&&tv.length)S.ty.st=Date.now();
+ if(!S.ty.done&&tv.length>S.ty.last){S.ty.keys+=tv.length-S.ty.last;if(tv.length<=target.length&&tv[tv.length-1]!==target[tv.length-1])S.ty.err++}
+ S.ty.last=tv.length;
+ let j=0,out="";
+ [...T].forEach((c,i)=>{
+  const k=ks[i],ch=c===" "?"&nbsp;":c.replace("&","&amp;").replace("<","&lt;");
+  if(k===""){out+=`<span class="${j<tv.length?'text-slate-700':'text-slate-300'}">${ch}</span>`;return}
+  if(j<tv.length){const ok=tv[j]===k;out+=`<span class="${ok?'text-emerald-600':'text-rose-600 bg-rose-100 rounded'}">${ch}</span>`}
+  else if(j===tv.length)out+=`<span class="bg-yellow-200 text-slate-800 rounded">${ch}</span>`;
+  else out+=`<span class="text-slate-300">${ch}</span>`;
+  j++;
+ });
+ $("tyshow").innerHTML=out;
+ if(!S.ty.done&&tv.length>=target.length&&tv.slice(0,target.length)===target){S.ty.done={ms:Date.now()-S.ty.st};e.disabled=true}
+ const D=S.ty.done, mins=D?Math.max(D.ms/60000,0.01):0;
+ const acc=S.ty.keys?Math.round((S.ty.keys-S.ty.err)/S.ty.keys*100):100;
+ $("tystat").innerHTML=`<div class="flex flex-wrap items-center justify-between gap-3 bg-white rounded-2xl p-3 border border-slate-100 text-sm">
+  <span class="font-bold text-slate-500">Progreso: <b class="text-emerald-700">${Math.min(100,Math.round(tv.length/target.length*100))}%</b></span>
+  <span class="font-bold text-slate-500">Precisión: <b class="text-emerald-700">${acc}%</b></span>
+  <span class="font-bold text-slate-500">Errores: <b class="text-rose-600">${S.ty.err}</b></span>
+  ${D?`<span class="font-bold text-slate-500">Tiempo: <b class="text-emerald-700">${(D.ms/1000).toFixed(1)} s</b></span><span class="font-bold text-slate-500">Velocidad: <b class="text-emerald-700">${Math.round(target.length/5/mins)} ppm</b></span>`:''}
+  <span class="flex gap-2"><button class="${sec} !py-1.5 !px-3 text-xs" onclick="tySet(S.ty.t)">🔄 Reiniciar</button><button class="${pri} !py-1.5 !px-3 text-xs" onclick="tySet((S.ty.t+1)%TY.length)">Siguiente texto →</button></span></div>
+  ${D?`<p class="text-center mt-3 font-bold text-emerald-700">🎉 ¡Texto completado!</p>`:''}`;
+}
+
+// ===== QUIZ =====
+const QZ=[
+ ["Qual é a tradução de «geladeira»?","Nevera","Horno","Lavadora","Armario","Geladeira é a nevera (também se diz «refrigerador»)."],
+ ["Como se diz «autobús» no Brasil?","ônibus","autocarro","comboio","camião","Em Portugal diz-se «autocarro»; no Brasil, «ônibus»."],
+ ["Qual frase está correta?","Eu gosto de café","Eu gosto café","Eu gostar café","Eu gosto do café de","O verbo «gostar» sempre leva a preposição «de»."],
+ ["O que significa «Beleza!» numa conversa?","¡Genial! / ¡De acuerdo!","Belleza","¡Cuidado!","Fealdad","É uma gíria muito comum para aceitar um plano ou dizer que algo é ótimo."],
+ ["«Eu estou com fome» significa…","Tengo hambre","Tengo sed","Tengo frío","Tengo prisa","Estar com fome = tener hambre."],
+ ["Ontem eu ___ pizza. (comer)","comi","como","comerei","comeu","Pretérito perfeito de «eu»: comi."],
+ ["Qual palavra significa «mañana» (el día siguiente)?","amanhã","manhã","ontem","hoje","«Manhã» é a parte do dia; «amanhã» é o dia seguinte."],
+ ["O que é «pão»?","Pan","Palo","Pie","Pato","Pão = pan. O plural é «pães»."],
+ ["Falso amigo: o que significa «esquisito»?","Raro / extraño","Exquisito","Delicioso","Elegante","Cuidado: «esquisito» NÃO é exquisito; é estranho."],
+ ["Falso amigo: o que significa «pegar»?","Coger / agarrar","Golpear","Pagar","Pasar","«Pegar» é coger ou agarrar; golpear é «bater»."],
+ ["Alguém diz «Obrigado!». O que você responde?","De nada","Bom dia","Tchau","Desculpa","«De nada» é a resposta clássica ao agradecimento."],
+ ["Qual é a tradução de «Cadê?» (informal)?","¿Dónde está?","¿Quién es?","¿Cuándo?","¿Cuánto?","«Cadê o meu celular?» = ¿Dónde está mi móvil?"],
+ ["«Nossa!» expressa…","Sorpresa / asombro","Enfado","Aburrimiento","Despedida","Abreviação de «Nossa Senhora!», usada para mostrar surpresa."],
+ ["Qual verbo significa «tener»?","ter","ser","ver","ir","Ter = tener; ser = ser; ver = ver; ir = ir."],
+ ["Ontem eu ___ ao mercado. (ir)","fui","vou","irei","vão","Pretérito perfeito de «ir» (eu): fui."],
+ ["Como se pergunta «¿cuánto cuesta?»","Quanto custa?","Quando custa?","Qual custa?","Quem custa?","«Quanto» = cuánto; «quando» = cuándo."],
+ ["Como se diz «zapatillas deportivas» no Brasil?","tênis","chinelo","bota","sapato","«Chinelo» é chancla; «tênis», zapatillas."],
+ ["«Banheiro» significa…","Baño","Bañera","Bañador","Banco","Banheiro = baño. Bañador é «maiô» ou «sunga»."],
+ ["Qual é o plural de «pão»?","pães","pãos","pões","pãs","Os plurais em -ão variam: pães, mãos, leões."],
+ ["O que quer dizer «saudade»?","Nostalgia / echar de menos","Salud","Saludo","Soledad","Palavra muito brasileira, difícil de traduzir com uma só palavra."]
+];
+const QN=10,QP=10;
+const qzMk=()=>({qs:shuf(QZ).slice(0,QN).map(x=>({q:x[0],c:x[1],o:shuf(x.slice(1,5)),e:x[5]})),i:0,score:0,pick:null,done:false});
+function qzStart(){S.qz=qzMk();render()}
+function qzPick(n){const z=S.qz;if(z.pick!==null)return;z.pick=n;if(z.qs[z.i].o[n]===z.qs[z.i].c)z.score+=QP;render()}
+function qzNext(){const z=S.qz;if(z.i+1>=z.qs.length)z.done=true;else{z.i++;z.pick=null}render()}
+function quizTab(){
+ if(!S.qz)S.qz=qzMk();
+ const z=S.qz,tot=z.qs.length;
+ if(z.done){
+  const max=tot*QP,pct=Math.round(z.score/max*100);
+  const msg=pct>=80?"Excelente! Você manda bem em português!":pct>=50?"Muito bem! Continue praticando.":"Bom começo! Tente de novo para melhorar.";
+  return `<div class="max-w-xl mx-auto bg-white rounded-3xl p-8 text-center shadow-xl border border-slate-100">
+   <div class="text-6xl mb-3">${pct>=70?'🏆':'💪'}</div>
+   <h3 class="text-2xl font-extrabold text-slate-800">Quiz concluído!</h3>
+   <div class="text-5xl font-extrabold text-emerald-600 my-4">${z.score}<span class="text-xl font-bold text-slate-400"> / ${max} pontos</span></div>
+   <p class="font-semibold text-slate-600">${msg}</p>
+   <p class="text-sm text-slate-400 mt-1 mb-6">${z.score/QP} acertos de ${tot} perguntas (${pct}%)</p>
+   <button class="${pri} w-full" onclick="qzStart()">🔄 Jogar de novo</button></div>`;
+ }
+ const q=z.qs[z.i],ans=z.pick!==null,hit=ans&&q.o[z.pick]===q.c;
+ const bar=Math.round((z.i+(ans?1:0))/tot*100);
+ return `<div class="max-w-xl mx-auto">
+  <div class="text-center mb-5"><h2 class="text-2xl font-extrabold text-slate-800">Quiz de Português 🎯</h2>
+  <p class="text-sm text-slate-500 mt-1">Responda às perguntas e some pontos. Cada acerto vale ${QP} pontos.</p></div>
+  <div class="flex items-center justify-between mb-2 px-1">
+   <span class="text-sm font-bold text-slate-500">Pergunta ${z.i+1} de ${tot}</span>
+   <span class="px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-sm font-extrabold">⭐ ${z.score} pts</span>
+  </div>
+  <div class="h-2.5 rounded-full bg-slate-200 overflow-hidden mb-5"><div class="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-500" style="width:${bar}%"></div></div>
+  <div class="bg-white rounded-3xl shadow-xl border border-slate-100 p-5 sm:p-7">
+   <h3 class="text-lg sm:text-xl font-extrabold text-slate-800 mb-5 leading-snug">${q.q}</h3>
+   <div class="space-y-3">${q.o.map((t,n)=>{
+    let cls="border-slate-200 bg-white hover:border-emerald-400 hover:bg-emerald-50 text-slate-700",ic="";
+    if(ans){if(t===q.c){cls="border-emerald-500 bg-emerald-50 text-emerald-800";ic="✅"}else if(n===z.pick){cls="border-rose-500 bg-rose-50 text-rose-800";ic="❌"}else cls="border-slate-100 bg-slate-50 text-slate-400"}
+    return `<button ${ans?'disabled':''} onclick="qzPick(${n})" class="w-full text-left px-4 py-3.5 rounded-2xl border-2 font-semibold transition-all active:scale-[.98] flex items-center justify-between gap-3 ${cls}"><span class="flex items-center gap-3"><span class="w-7 h-7 shrink-0 rounded-lg bg-black/5 text-xs flex items-center justify-center font-bold">${"ABCD"[n]}</span>${t}</span><span>${ic}</span></button>`}).join("")}</div>
+   ${ans?`<div class="mt-5 p-4 rounded-2xl text-sm font-medium ${hit?'bg-emerald-50 text-emerald-900 border border-emerald-200':'bg-rose-50 text-rose-900 border border-rose-200'}"><p class="font-extrabold mb-1">${hit?'Correto! 🎉 +'+QP+' pontos':'Quase! A resposta certa é: '+q.c}</p><p>${q.e}</p></div>
+   <button class="${pri} w-full mt-4" onclick="qzNext()">${z.i+1>=tot?'Ver resultado 🏁':'Próxima pergunta →'}</button>`:''}
+  </div></div>`;
+}
+
+// ===== UTILIDADES Y LISTA TOTAL DE PALABRAS PARA JUEGOS =====
+const norm=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
+const $=id=>document.getElementById(id);
+const S={tab:"vocab",theme:null,mode:"lista",i:0,flip:false,quiz:null,open:null,sub:"gir",rain:null,timer:null,guess:null};
+
+const say=t=>{try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="pt-BR";u.rate=.85;speechSynthesis.speak(u)}catch(e){}};
+
+// Colección plana de todas las palabras registradas
+const getAllWords=()=>{
+ const all=[];
+ Object.entries(THEMES).forEach(([cat,items])=>{
+  items.forEach(w=>all.push({emoji:w[0],pt:w[1],es:w[2],cat}));
+ });
+ Object.entries(VERBS).forEach(([cat,items])=>{
+  items.forEach(w=>all.push({emoji:w[0],pt:w[1],es:w[2],cat}));
+ });
+ return all;
+};
+
+// Estilos reutilizables para botones
+const btnBase="px-4 py-2.5 rounded-2xl font-semibold transition-all duration-200 shadow-sm active:scale-95 flex items-center justify-center gap-2 ";
+const pri=btnBase+"bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-200";
+const sec=btnBase+"bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300";
+
+// Helper para barajar arreglos
+const shuf=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+
+// Cleaners de Timers al cambiar pestañas
+function clearGameIntervals(){
+ ['rainLoop','timerLoop','cdLoop'].forEach(k=>{if(S[k]){clearInterval(S[k]);S[k]=null}});
+}
+
+// ===== JUEGOS: MENÚ, AJUSTES Y CUENTA ATRÁS =====
+const G={game:null,phase:'menu',cat:'all',diff:1,n:3};
+const GAMES={
+ rain:{ico:'🌧️',name:'Chuva de Palavras',desc:'Las palabras caen del cielo: tradúcelas antes de que toquen el suelo.',
+  how:['Lee la palabra en español que cae.','Escríbela en portugués (vale sin acentos). Se valida sola.','Si una palabra llega al suelo pierdes una vida.']},
+ timer:{ico:'⚡',name:'Contra o Relógio',desc:'Traduce tantas palabras como puedas antes de que se acabe el tiempo.',
+  how:['Verás un emoji y la palabra en español.','Escríbela en portugués: pasa a la siguiente al acertar.','Las rachas dan puntos extra; "Pular" rompe la racha.']},
+ guess:{ico:'🧩',name:'Adivinha a Palavra',desc:'Descubre la palabra oculta letra a letra, como un ahorcado.',
+  how:['Pulsa letras (o usa tu teclado) para destapar la palabra.','Cada fallo te quita una vida.','Si la sabes, escríbela entera: acertar da más puntos, fallar cuesta 2 vidas.']}
+};
+const DIFFS=['Fácil','Normal','Difícil'];
+const DHINT={rain:['Lento · 5 vidas','Ritmo medio · 3 vidas','Rápido · 3 vidas'],timer:['90 segundos','60 segundos','40 segundos'],guess:['8 vidas','6 vidas','4 vidas']};
+const hsKey=(g,d=G.diff)=>`fb_${g}_${d}_hs`;
+const getHS=(g,d=G.diff)=>{try{return +localStorage.getItem(hsKey(g,d))||0}catch(e){return 0}};
+const setHS=(g,v)=>{try{if(v>getHS(g)){localStorage.setItem(hsKey(g),v);return true}}catch(e){}return false};
+const toW=(a,cat)=>a.map(w=>({emoji:w[0],pt:w[1],es:w[2],cat}));
+const gamePool=()=>{
+ if(G.cat==='all')return getAllWords();
+ if(G.cat==='__v')return Object.entries(VERBS).flatMap(([c,a])=>toW(a,c));
+ return toW(THEMES[G.cat]||[],G.cat);
+};
+
+function gameOpen(g){clearGameIntervals();G.game=g;G.phase='intro';render()}
+function gameExit(){clearGameIntervals();G.game=null;G.phase='menu'}
+function gameBack(){gameExit();render()}
+function gameSet(k,v){G[k]=v;render()}
+function gameCountdown(){
+ clearGameIntervals();G.phase='count';G.n=3;render();
+ S.cdLoop=setInterval(()=>{G.n--;if(G.n<=0){clearGameIntervals();gameStart()}else render()},800);
+}
+function gameStart(){G.phase='play';({rain:rainInit,timer:timerInit,guess:guessInit})[G.game]()}
+
+function gameMenu(){
+ return `<div class="text-center mb-6">
+  <h2 class="text-2xl font-extrabold text-slate-800">🎮 Jogos</h2>
+  <p class="text-sm text-slate-500 mt-1">Elige un juego, ajusta el tema y la dificultad, y empieza cuando estés listo.</p>
+ </div>
+ <div class="grid gap-4 sm:grid-cols-3">`+Object.entries(GAMES).map(([k,g])=>{
+  const best=Math.max(getHS(k,0),getHS(k,1),getHS(k,2));
+  return `<button onclick="gameOpen('${k}')" class="group text-left p-5 rounded-3xl bg-white border border-slate-100 hover:border-emerald-400 hover:shadow-xl transition-all flex flex-col">
+   <span class="text-5xl mb-3 group-hover:scale-110 transition-transform origin-left">${g.ico}</span>
+   <h3 class="font-extrabold text-slate-800 text-base">${g.name}</h3>
+   <p class="text-xs text-slate-500 mt-1 leading-relaxed flex-1">${g.desc}</p>
+   <div class="mt-4 text-xs font-bold ${best?'text-amber-600':'text-slate-400'}">${best?'🏆 Récord: '+best:'Aún sin récord'}</div>
+  </button>`}).join('')+`</div>`;
+}
+
+function gameIntro(k,g){
+ const cats=[['all','🌎 Todas las palabras'],...Object.keys(THEMES).map(c=>[c,c]),['__v','🏃 Verbos']];
+ const best=getHS(k);
+ return `<div class="max-w-md mx-auto bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-slate-100">
+  <div class="text-center">
+   <div class="text-6xl mb-2">${g.ico}</div>
+   <h2 class="text-2xl font-extrabold text-slate-800">${g.name}</h2>
+   <p class="text-sm text-slate-500 mt-1">${g.desc}</p>
+  </div>
+  <ol class="mt-5 space-y-2 text-sm text-slate-600 font-medium list-decimal list-inside bg-slate-50 rounded-2xl p-4">${g.how.map(h=>`<li>${h}</li>`).join('')}</ol>
+  <label class="block mt-5 text-xs font-bold text-slate-500">Tema</label>
+  <select onchange="gameSet('cat',this.value)" class="mt-1 w-full border-2 border-slate-200 focus:border-emerald-500 rounded-2xl px-3 py-2.5 font-bold text-slate-700 bg-white focus:outline-none">
+   ${cats.map(([v,l])=>`<option value="${v}" ${G.cat===v?'selected':''}>${l}</option>`).join('')}
+  </select>
+  <label class="block mt-4 text-xs font-bold text-slate-500">Dificultad <span class="font-medium text-slate-400">· ${DHINT[k][G.diff]}</span></label>
+  <div class="mt-1 flex gap-2">${DIFFS.map((d,i)=>`<button onclick="gameSet('diff',${i})" class="flex-1 py-2.5 rounded-xl text-sm font-bold border-2 transition-all ${G.diff===i?'border-emerald-600 bg-emerald-50 text-emerald-800':'border-slate-200 text-slate-500 hover:border-slate-300'}">${d}</button>`).join('')}</div>
+  <p class="text-center text-xs font-bold mt-5 ${best?'text-amber-600':'text-slate-400'}">${best?'🏆 Tu récord en '+DIFFS[G.diff]+': '+best:'Aún no tienes récord en '+DIFFS[G.diff]}</p>
+  <button onclick="gameCountdown()" class="${pri} w-full mt-3 !py-3.5 text-lg">▶ Comenzar</button>
+ </div>`;
+}
+
+function countView(g){
+ return `<div class="text-center py-16">
+  <p class="text-sm font-bold text-slate-500">${g.ico} ${g.name}</p>
+  <div class="cd text-9xl font-extrabold text-emerald-600 my-4">${G.n}</div>
+  <p class="text-slate-500 font-medium">¡Prepárate!</p>
+ </div>`;
+}
+
+function endCard(ico,title,score,unit,rec,best,extra){
+ return `<div class="bg-white rounded-3xl p-6 text-center shadow-xl border border-slate-100 w-full max-w-sm mx-auto">
+  <div class="text-5xl mb-2">${ico}</div>
+  <h3 class="text-2xl font-extrabold text-slate-800">${title}</h3>
+  <div class="text-4xl font-extrabold text-emerald-600 mt-3">${score} <span class="text-base font-medium text-slate-400">${unit}</span></div>
+  <p class="text-xs text-slate-500 font-medium mt-1">${extra}</p>
+  <p class="text-sm font-extrabold mt-3 ${rec?'text-amber-500':'text-slate-500'}">${rec?'🏆 ¡Nuevo récord!':'Récord: '+best}</p>
+  <div class="flex gap-2 mt-5">
+   <button onclick="gameCountdown()" class="${pri} flex-1">🔄 Otra vez</button>
+   <button onclick="gameOpen(G.game)" class="${sec} flex-1">⚙️ Ajustes</button>
+  </div>
+ </div>`;
+}
+
+// ===== MINIJUEGO 1: CHUVA DE PALAVRAS =====
+const RP=[{speed:.5,spawn:3200,lives:5,max:1.4},{speed:.8,spawn:2200,lives:3,max:2.2},{speed:1.1,spawn:1600,lives:3,max:2.8}];
+function rainInit(){
+ const p=RP[G.diff];
+ S.rain={score:0,hit:0,lives:p.lives,words:[],active:true,paused:false,speed:p.speed,max:p.max,spawnRate:p.spawn,lastSpawn:0,pool:gamePool(),rec:false};
+ render();rainStartLoop();
+}
+function rainStartLoop(){
+ clearGameIntervals();
+ S.rainLoop=setInterval(()=>{
+  const r=S.rain;
+  if(!r||!r.active||r.paused)return;
+  const now=Date.now();
+  if(now-r.lastSpawn>r.spawnRate){
+   const free=r.pool.filter(p=>!r.words.some(w=>w.pt===p.pt));
+   const it=(free.length?free:r.pool)[Math.floor(Math.random()*(free.length||r.pool.length))];
+   r.words.push({emoji:it.emoji,pt:it.pt,es:it.es,x:Math.floor(Math.random()*70)+15,y:0});
+   r.lastSpawn=now;
+   if(r.speed<r.max)r.speed+=0.015;
+   if(r.spawnRate>900)r.spawnRate-=20;
+  }
+  for(let i=r.words.length-1;i>=0;i--){
+   const w=r.words[i];w.y+=r.speed;
+   if(w.y>=90){
+    r.lives--;r.words.splice(i,1);
+    if(r.lives<=0){r.active=false;r.rec=setHS('rain',r.score);clearGameIntervals();}
+   }
+  }
+  rainRenderUI();
+ },50);
+}
+function rainCheckInput(val){
+ const r=S.rain;
+ if(!r||!r.active||r.paused)return;
+ const c=norm(val);
+ if(!c)return;
+ const idx=r.words.findIndex(w=>norm(w.pt)===c);
+ if(idx!==-1){
+  say(r.words[idx].pt);
+  r.score+=10;r.hit++;r.words.splice(idx,1);
+  const el=$("rainInput");if(el)el.value="";
+  rainRenderUI();
+ }
+}
+function rainPause(){
+ const r=S.rain;
+ if(!r||!r.active)return;
+ r.paused=!r.paused;
+ if(!r.paused)r.lastSpawn=Date.now();
+ const b=$("rainPause");if(b)b.textContent=r.paused?'▶':'⏸';
+ rainRenderUI();
+ if(!r.paused){const el=$("rainInput");if(el)el.focus();}
+}
+function rainRenderUI(){
+ const box=$("rainBox"),st=$("rainStats"),r=S.rain;
+ if(!box||!st||!r)return;
+ if(!r.active){
+  box.innerHTML=`<div class="h-full flex items-center justify-center p-4">${endCard('💥','¡Fim de jogo!',r.score,'puntos',r.rec,getHS('rain'),r.hit+' palabras traducidas')}</div>`;
+  st.innerHTML='';
+  return;
+ }
+ st.innerHTML=`<div class="flex items-center justify-between bg-white px-4 py-2.5 rounded-2xl border border-slate-100 shadow-sm text-sm font-extrabold">
+  <span class="text-rose-600">Vidas: ${'❤️'.repeat(Math.max(0,r.lives))}</span>
+  <span class="text-emerald-700">Puntos: ⭐ ${r.score}</span></div>`;
+ box.innerHTML=r.words.map(w=>`
+  <div class="falling-word px-3 py-1.5 rounded-xl bg-white/90 text-slate-800 border border-emerald-300 shadow-lg text-xs sm:text-sm font-bold flex items-center gap-1.5" style="top:${w.y}%;left:${w.x}%;"><span>${w.emoji}</span><span class="text-emerald-700 font-extrabold">${w.es}</span></div>`).join("")
+  +(r.paused?`<div class="absolute inset-0 bg-slate-900/70 flex items-center justify-center text-white font-extrabold text-xl">⏸ En pausa</div>`:'');
+}
+function rainView(){
+ return `<div class="max-w-xl mx-auto">
+  <div class="text-center mb-4"><h2 class="text-2xl font-extrabold text-slate-800">🌧️ Chuva de Palavras</h2>
+  <p class="text-sm text-slate-500 mt-1">Escribe en portugués las palabras que caen.</p></div>
+  <div id="rainStats" class="mb-3"></div>
+  <div id="rainBox" class="rain-box mb-4 shadow-inner"></div>
+  <div class="flex gap-2">
+   <input id="rainInput" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Escribe en portugués..." oninput="rainCheckInput(this.value)" class="flex-1 border-2 border-slate-200 focus:border-emerald-500 rounded-2xl px-4 py-3 font-bold text-slate-800 focus:outline-none transition-colors">
+   <button id="rainPause" onclick="rainPause()" class="${sec} !px-4" title="Pausa">⏸</button>
+  </div></div>`;
+}
+
+// ===== MINIJUEGO 2: CONTRA O RELÓGIO =====
+const TT=[90,60,40];
+function timerInit(){
+ S.timer={score:0,streak:0,ok:0,total:TT[G.diff],timeLeft:TT[G.diff],words:shuf(gamePool()),idx:0,active:true,rec:false};
+ render();timerStartLoop();
+}
+function timerStartLoop(){
+ clearGameIntervals();
+ S.timerLoop=setInterval(()=>{
+  const t=S.timer;
+  if(!t||!t.active)return;
+  t.timeLeft--;
+  if(t.timeLeft<=0){t.timeLeft=0;t.active=false;t.rec=setHS('timer',t.score);clearGameIntervals();timerRenderUI();}
+  else timerTick();
+ },1000);
+}
+function timerTick(){
+ const t=S.timer,e=$("tmTime"),b=$("tmBar");
+ if(e){e.textContent='⏳ '+t.timeLeft+'s';e.className='text-2xl font-extrabold '+(t.timeLeft<=10?'text-rose-600':'text-slate-800');}
+ if(b)b.style.width=(t.timeLeft/t.total*100)+'%';
+}
+function timerAdvance(){
+ const t=S.timer;t.idx=(t.idx+1)%t.words.length;
+ timerRenderUI();
+}
+function timerCheckInput(val){
+ const t=S.timer;
+ if(!t||!t.active)return;
+ const cur=t.words[t.idx];
+ if(norm(val)===norm(cur.pt)){
+  say(cur.pt);
+  t.streak++;t.ok++;
+  t.score+=100+Math.min(t.streak*10,50);
+  timerAdvance();
+ }
+}
+function timerSkip(){
+ const t=S.timer;
+ if(!t||!t.active)return;
+ t.streak=0;timerAdvance();
+}
+function timerRenderUI(){
+ const box=$("timerBox"),t=S.timer;
+ if(!box||!t)return;
+ if(!t.active){box.innerHTML=endCard('⏱️','¡Tempo Esgotado!',t.score,'puntos',t.rec,getHS('timer'),t.ok+' palabras acertadas');return;}
+ const c=t.words[t.idx];
+ box.innerHTML=`<div class="bg-white rounded-3xl p-6 sm:p-8 text-center shadow-xl border border-slate-100">
+  <div class="flex items-center justify-between mb-3">
+   <div class="text-left"><span class="text-xs font-bold text-slate-400 block">Tiempo</span>
+    <span id="tmTime" class="text-2xl font-extrabold ${t.timeLeft<=10?'text-rose-600':'text-slate-800'}">⏳ ${t.timeLeft}s</span></div>
+   <div><span class="text-xs font-bold text-slate-400 block">Racha</span><span class="text-2xl font-extrabold text-amber-500">🔥 x${t.streak}</span></div>
+   <div class="text-right"><span class="text-xs font-bold text-slate-400 block">Puntos</span><span class="text-2xl font-extrabold text-emerald-600">⭐ ${t.score}</span></div>
+  </div>
+  <div class="h-2 bg-slate-100 rounded-full mb-6 overflow-hidden"><div id="tmBar" class="h-full bg-emerald-500 transition-all duration-1000 ease-linear" style="width:${t.timeLeft/t.total*100}%"></div></div>
+  <div class="text-6xl mb-3">${c.emoji}</div>
+  <span class="inline-block px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-bold mb-1">${c.cat}</span>
+  <h3 class="text-2xl font-extrabold text-slate-800 mb-6">${c.es}</h3>
+  <div class="flex gap-2">
+   <input id="timerInput" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Escribe en portugués..." oninput="timerCheckInput(this.value)" class="flex-1 min-w-0 border-2 border-slate-200 focus:border-emerald-500 rounded-2xl px-4 py-3 text-center font-bold text-xl text-slate-800 focus:outline-none transition-colors">
+   <button onclick="timerSkip()" class="${sec} text-xs !px-4">Pular ⏭️</button>
+  </div></div>`;
+ const inp=$("timerInput");if(inp)inp.focus();
+}
+function timerView(){
+ return `<div class="max-w-md mx-auto"><div class="text-center mb-4"><h2 class="text-2xl font-extrabold text-slate-800">⚡ Contra o Relógio</h2>
+ <p class="text-sm text-slate-500 mt-1">Traduce tantas palabras como puedas.</p></div><div id="timerBox"></div></div>`;
+}
+
+// ===== MINIJUEGO 3: ADIVINHA A PALAVRA =====
+const GT=[8,6,4];
+function guessInit(){
+ S.guess={pool:shuf(gamePool()),idx:0,score:0,solved:0,max:GT[G.diff],revealed:new Set(),triesLeft:GT[G.diff],status:'playing',rec:false};
+ guessSetupWord();render();
+}
+function guessSetupWord(){
+ const g=S.guess,word=g.pool[g.idx].pt;
+ g.revealed=new Set();
+ [...word].forEach(c=>{if(!/[a-zA-Zà-úÀ-ÚçÇ]/.test(c))g.revealed.add(norm(c));});
+ g.triesLeft=g.max;g.status='playing';
+}
+function guessWin(pts){
+ const g=S.guess;
+ g.status='won';g.score+=pts;g.solved++;
+ if(setHS('guess',g.score))g.rec=true;
+ say(g.pool[g.idx].pt);
+}
+function guessLetter(letter){
+ const g=S.guess;
+ if(!g||g.status!=='playing')return;
+ const l=norm(letter);
+ if(g.revealed.has(l))return;
+ g.revealed.add(l);
+ const word=g.pool[g.idx].pt,t=[...word].map(c=>norm(c));
+ if(!t.includes(l)){g.triesLeft--;if(g.triesLeft<=0)g.status='lost';}
+ else if(t.every(c=>g.revealed.has(c)))guessWin(50+g.triesLeft*10);
+ render();
+}
+function guessSolve(val){
+ const g=S.guess;
+ if(!g||g.status!=='playing'||!val.trim())return;
+ if(norm(val)===norm(g.pool[g.idx].pt))guessWin(100);
+ else{g.triesLeft-=2;if(g.triesLeft<=0){g.triesLeft=0;g.status='lost';}}
+ render();
+}
+function guessNext(){
+ const g=S.guess;
+ g.idx=(g.idx+1)%g.pool.length;
+ guessSetupWord();render();
+}
+document.addEventListener('keydown',e=>{
+ if(S.tab!=='jogos'||G.game!=='guess'||G.phase!=='play'||!S.guess)return;
+ if(document.activeElement&&document.activeElement.tagName==='INPUT')return;
+ if(e.ctrlKey||e.metaKey||e.altKey)return;
+ if(S.guess.status==='playing'&&/^[a-z]$/i.test(e.key))guessLetter(e.key);
+ else if(S.guess.status!=='playing'&&e.key==='Enter')guessNext();
+});
+function guessView(){
+ const g=S.guess,cur=g.pool[g.idx],target=[...cur.pt];
+ const alpha="abcdefghijklmnopqrstuvwxyz".split("");
+ const word=target.map(c=>{
+  if(c===" ")return `<span class="w-4"></span>`;
+  if(g.revealed.has(norm(c))||g.status!=='playing')
+   return `<span class="w-8 sm:w-9 h-11 border-b-4 ${g.status==='lost'&&!g.revealed.has(norm(c))?'border-rose-400 text-rose-600':'border-emerald-600 text-emerald-800'} font-extrabold text-2xl flex items-center justify-center">${c}</span>`;
+  return `<span class="w-8 sm:w-9 h-11 border-b-4 border-slate-300 bg-slate-100 rounded-t-md"></span>`;
+ }).join("");
+ const over=g.status!=='playing';
+ return `<div class="max-w-md mx-auto">
+  <div class="text-center mb-4"><h2 class="text-2xl font-extrabold text-slate-800">🧩 Adivinha a Palavra</h2>
+  <p class="text-sm text-slate-500 mt-1">Pulsa letras o escribe la palabra completa.</p></div>
+  <div class="bg-white rounded-3xl p-6 shadow-xl border border-slate-100 text-center">
+   <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100 text-xs font-extrabold">
+    <span class="text-rose-600">Vidas: ${'❤️'.repeat(Math.max(0,g.triesLeft))}</span>
+    <span class="text-slate-500">Acertadas: ${g.solved}</span>
+    <span class="text-emerald-700">Puntos: ⭐ ${g.score}</span>
+   </div>
+   <div class="text-6xl mb-2">${cur.emoji}</div>
+   <span class="inline-block px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-bold mb-1">Pista: ${cur.es}</span>
+   <p class="text-xs text-slate-400 mb-5 font-medium">${cur.cat}</p>
+   <div class="flex justify-center flex-wrap gap-1.5 mb-6 select-none">${word}</div>
+   ${!over?`
+    <div class="flex flex-wrap justify-center gap-1.5 mb-5">${alpha.map(l=>{const u=g.revealed.has(l);
+     return `<button ${u?'disabled':''} onclick="guessLetter('${l}')" class="w-8 h-9 rounded-xl font-bold text-sm transition-all ${u?'bg-slate-100 text-slate-300':'bg-slate-50 hover:bg-emerald-100 text-slate-700 border border-slate-200 active:scale-95'}">${l.toUpperCase()}</button>`}).join("")}</div>
+    <div class="flex gap-2">
+     <input id="guessInput" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="¿Sabes la palabra completa?" onkeyup="if(event.key==='Enter')guessSolve(this.value)" class="flex-1 min-w-0 border-2 border-slate-200 focus:border-emerald-500 rounded-2xl px-3 py-2 text-sm font-bold text-slate-800 focus:outline-none">
+     <button onclick="guessSolve($('guessInput').value)" class="${pri} !py-2 !px-4 text-xs">Resolver</button>
+    </div>`:`
+    <div class="p-4 rounded-2xl mb-4 ${g.status==='won'?'bg-emerald-50 border border-emerald-200 text-emerald-800':'bg-rose-50 border border-rose-200 text-rose-800'}">
+     <p class="font-extrabold">${g.status==='won'?'🎉 ¡Excelente! Lo adivinaste.':'❌ Sin vidas restantes.'}</p>
+     <p class="text-xs mt-1">${g.status==='won'?'Era':'La respuesta era'}: <b class="text-sm underline">${cur.pt}</b>${g.rec&&g.status==='won'?' · 🏆 ¡Nuevo récord!':''}</p>
+    </div>
+    <button onclick="guessNext()" class="${pri} w-full justify-center">Siguiente palabra →</button>`}
+  </div>
+  <p class="text-center text-xs text-slate-400 font-medium mt-3">Récord (${DIFFS[G.diff]}): ${Math.max(getHS('guess'),g.score)}</p>
+ </div>`;
+}
+
+// ===== PESTAÑA PRINCIPAL DE JUEGOS =====
+function jogosTab(){
+ if(!G.game)return gameMenu();
+ const g=GAMES[G.game];
+ const back=`<button onclick="gameBack()" class="${sec} !py-2 mb-4 text-sm">← Todos los juegos</button>`;
+ if(G.phase==='intro')return back+gameIntro(G.game,g);
+ if(G.phase==='count')return back+countView(g);
+ return back+({rain:rainView,timer:timerView,guess:guessView})[G.game]();
+}
+
+// ===== NAVEGACIÓN Y RENDER GENERAL =====
+function nav(){
+ const t=[
+  ["vocab","Vocabulario"],
+  ["frases","Expresiones y Frases"],
+  ["verbos","Verbos y Conjugaciones"],
+  ["tipo","⌨️ Mecanografía"],
+  ["quiz","🎯 Quiz"],
+  ["jogos","🎮 Jogos"]
+ ];
+ $("nav").innerHTML=t.map(([k,l])=>`<button onclick="gameExit();go({tab:'${k}',theme:null,mode:'lista',i:0,flip:false,quiz:null,open:null})" class="px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${S.tab===k?'bg-white text-emerald-800 shadow-md':'text-white/90 hover:bg-white/10'}">${l}</button>`).join("");
+}
+
+function themeMenu(d){
+ const isV=S.tab==='verbos';
+ return `
+ <div class="mb-6 text-center">
+   <h2 class="text-2xl font-extrabold text-slate-800">${isV?'Categorías de Verbos':'Explora Temas de Vocabulario'}</h2>
+   <p class="text-sm text-slate-500 mt-1">Selecciona un tema para practicar con listas, flashcards y exámenes interactivos.</p>
+ </div>
+ <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">`+
+ Object.keys(d).map(k=>`
+   <button onclick="go({theme:'${k}',mode:'lista',i:0,flip:false,quiz:null,open:null})" class="group p-5 rounded-3xl bg-white border border-slate-100 hover:border-emerald-400 hover:shadow-xl transition-all duration-300 text-left flex flex-col justify-between relative overflow-hidden">
+     <div class="absolute -right-4 -bottom-4 text-7xl opacity-5 group-hover:scale-110 transition-transform duration-300">${d[k][0][0]}</div>
+     <div>
+       <span class="text-4xl block mb-3 group-hover:scale-110 transition-transform origin-left">${d[k][0][0]}</span>
+       <h3 class="font-bold text-slate-800 group-hover:text-emerald-700 text-base">${k}</h3>
+     </div>
+     <div class="text-xs font-medium text-slate-400 mt-3 flex items-center gap-1">
+       <span>${d[k].length} ${isV?'verbos':'palabras'}</span>
+       <span class="group-hover:translate-x-1 transition-transform">→</span>
+     </div>
+   </button>`).join("")+`</div>`;
+}
+
+function conj(v){
+ const p=["eu (yo)","você/ele/ela (usted/él/ella)","nós (nosotros)","vocês/eles/elas (ustedes/ellos)"];
+ const T=[["Presente",3],["Pretérito Perfeito",4],["Futuro do Presente",5]];
+ return `
+ <div class="mt-4 overflow-x-auto rounded-2xl border border-emerald-100 bg-emerald-50/40 p-1">
+   <table class="w-full text-xs sm:text-sm text-left">
+     <thead>
+       <tr class="text-emerald-900 border-b border-emerald-100 bg-emerald-100/50">
+         <th class="p-2.5 font-bold">Persona</th>
+         ${T.map(t=>`<th class="p-2.5 font-bold">${t[0]}</th>`).join("")}
+       </tr>
+     </thead>
+     <tbody class="divide-y divide-emerald-100/60">
+       ${p.map((x,j)=>`
+         <tr class="hover:bg-white/60 transition-colors">
+           <td class="p-2.5 font-medium text-slate-600">${x}</td>
+           ${T.map(t=>`<td class="p-2.5 font-bold text-emerald-800">${v[t[1]][j]}</td>`).join("")}
+         </tr>`).join("")}
+     </tbody>
+   </table>
+ </div>`;
+}
+
+function modeBar(){
+ return `
+ <div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-100 mb-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+   <div class="flex items-center gap-3 w-full sm:w-auto">
+     <button onclick="go({theme:null,open:null})" class="p-2.5 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-600 transition-colors">←</button>
+     <div>
+       <span class="text-xs text-slate-400 uppercase tracking-wider font-bold block">Tema seleccionado</span>
+       <h2 class="font-extrabold text-slate-800 text-lg">${S.theme}</h2>
+     </div>
+   </div>
+   <div class="flex items-center gap-1.5 w-full sm:w-auto justify-end bg-slate-100 p-1 rounded-xl">
+     ${[["lista","📋 Lista"],["cards","🃏 Flashcards"],["examen","✏️ Examen"]].map(([k,l])=>`<button onclick="go({mode:'${k}',i:0,flip:false,quiz:null,open:null})" class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all ${S.mode===k?'bg-white text-emerald-700 shadow-sm':'text-slate-600 hover:text-slate-900'}">${l}</button>`).join("")}
+   </div>
+ </div>`;
+}
+
+function items(){const d=S.tab==="vocab"?THEMES:VERBS;return d[S.theme]||[];}
+function go(p){Object.assign(S,p);render();}
+
+function lista(){
+ const v=S.tab==="verbos";
+ return `
+ <div class="grid gap-3 sm:grid-cols-2">`+
+ items().map((w,n)=>`
+   <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 hover:shadow-md transition-all">
+     <div class="flex items-center gap-4">
+       <div class="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center text-3xl shadow-inner flex-shrink-0 cursor-pointer hover:bg-emerald-100" title="Toca para escuchar" onclick="say(items()[${n}][1])">${w[0]}</div>
+       <div class="flex-1 min-w-0">
+         <div class="font-extrabold text-emerald-800 text-lg tracking-tight truncate">${w[1]}</div>
+         <div class="text-slate-500 text-sm font-medium truncate">${w[2]}</div>
+       </div>
+       ${v?`<button onclick="go({open:S.open===${n}?null:${n}})" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-800 hover:bg-emerald-200 transition-colors">${S.open===n?'Ocultar':'Conjugar'}</button>`:''}
+     </div>
+     ${v&&S.open===n?conj(w):''}
+   </div>`).join("")+`</div>`;
+}
+
+function cards(){
+ const L=items(), w=L[S.i], v=S.tab==="verbos";
+ return `
+ <div class="max-w-md mx-auto">
+   <div class="flex justify-between items-center text-xs font-bold text-slate-400 mb-3 px-1">
+     <span>Tarjeta ${S.i+1} de ${L.length}</span>
+     <span>Pulsa la tarjeta para girar</span>
+   </div>
+   
+   <div class="flip h-72 cursor-pointer select-none" onclick="go({flip:!S.flip})">
+     <div class="fi h-full ${S.flip?'on':''}">
+       <!-- FRENTE -->
+       <div class="face bg-white border-2 border-emerald-100 p-6 text-center">
+         <span class="text-7xl mb-4 animate-bounce">${w[0]}</span>
+         <span class="text-3xl font-extrabold text-emerald-800">${w[1]}</span>
+         <span class="text-xs text-slate-400 mt-2 font-medium">🇧🇷 Portugués de Brasil</span>
+       </div>
+       <!-- REVERSO -->
+       <div class="face back bg-gradient-to-br from-teal-700 to-emerald-800 text-white p-6 text-center">
+         <span class="text-xs uppercase tracking-widest text-emerald-200 font-bold mb-1">Traducción al español</span>
+         <span class="text-4xl font-extrabold mb-2">${w[2]}</span>
+         <span class="text-xs text-emerald-200/80 mt-2">Toca de nuevo para volver</span>
+       </div>
+     </div>
+   </div>
+
+   <div class="flex items-center justify-center gap-3 mt-5">
+     <button class="${sec}" onclick="go({i:(S.i-1+${L.length})%${L.length},flip:false,open:null})">← Anterior</button>
+     <button class="${pri}" onclick="go({flip:!S.flip})">Girar tarjeta</button>
+     <button class="${sec}" title="Escuchar" onclick="say(items()[S.i][1])">🔊</button>
+     <button class="${sec}" onclick="go({i:(S.i+1)%${L.length},flip:false,open:null})">Siguiente →</button>
+   </div>
+
+   ${v?`
+     <div class="mt-6 text-center">
+       <button class="w-full py-2.5 rounded-2xl bg-emerald-50 text-emerald-800 font-bold text-sm border border-emerald-200 hover:bg-emerald-100 transition-colors" onclick="go({open:S.open==='c'?null:'c'})">
+         ${S.open==='c'?'Ocultar conjugaciones completas':'✨ Ver todas las conjugaciones de este verbo'}
+       </button>
+     </div>
+     ${S.open==='c'?conj(w):''}
+   `:''}
+ </div>`;
+}
+
+function examen(){
+ const L=items(), v=S.tab==="verbos";
+ if(!S.quiz)S.quiz={n:0,ok:0,res:[],fb:null};
+ const q=S.quiz;
+
+ if(q.n>=L.length){
+  const pct=Math.round(q.ok/L.length*100);
+  let msg="¡Excelente trabajo!";
+  if(pct<50)msg="¡Sigue practicando, tú puedes!";
+  else if(pct<80)msg="¡Muy bien hecho!";
+
+  return `
+  <div class="max-w-md mx-auto bg-white rounded-3xl p-8 text-center shadow-xl border border-slate-100">
+    <div class="text-6xl mb-3">${pct>=70?'🎉':'💪'}</div>
+    <h3 class="text-2xl font-extrabold text-slate-800">Resultados del Examen</h3>
+    <div class="text-4xl font-extrabold text-emerald-600 my-3">${q.ok} / ${L.length} <span class="text-lg font-medium text-slate-400">(${pct}%)</span></div>
+    <p class="text-sm text-slate-600 mb-6 font-medium">${msg}</p>
+
+    <div class="space-y-2 text-left max-h-48 overflow-y-auto mb-6 pr-1">
+      ${q.res.map(r=>`
+        <div class="p-3 rounded-xl border text-xs flex items-center justify-between ${r.ok?'bg-emerald-50 border-emerald-200 text-emerald-900':'bg-rose-50 border-rose-200 text-rose-900'}">
+          <span class="font-bold">${r.e}</span>
+          <span>${r.ok?'✅ Correcto':`Escribiste: <b>${r.a||'vacío'}</b> (Era: <b>${r.c}</b>)`}</span>
+        </div>`).join("")}
+    </div>
+
+    <button class="${pri} w-full justify-center" onclick="go({quiz:null})">🔄 Repetir examen</button>
+  </div>`;
+ }
+
+ const w=L[q.n];
+ return `
+ <div class="max-w-md mx-auto">
+   <div class="flex justify-between items-center text-xs font-bold text-slate-400 mb-3 px-1">
+     <span>Pregunta ${q.n+1} de ${L.length}</span>
+     <span class="text-emerald-600">Aciertos: ${q.ok}</span>
+   </div>
+
+   <div class="bg-white rounded-3xl shadow-xl p-8 text-center border border-slate-100">
+     <div class="text-8xl mb-4 animate-pulse">${w[0]}</div>
+     <span class="inline-block px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-bold mb-2">Traducción: ${w[2]}</span>
+     <p class="text-slate-500 text-xs font-medium mb-4">${v?'Escribe el verbo en infinitivo (sin tildes ni acentos si prefieres)':'Escribe la palabra en portugués'}</p>
+
+     ${q.fb?`
+       <div class="p-4 rounded-2xl mb-4 ${q.fb.ok?'bg-emerald-50 text-emerald-800 border border-emerald-200':'bg-rose-50 text-rose-800 border border-rose-200'}">
+         <p class="font-bold text-base">${q.fb.ok?'¡Correcto! 🎉':'¡Incorrecto! ❌'}</p>
+         ${!q.fb.ok?`<p class="text-xs mt-1">La respuesta correcta era: <b class="underline text-sm">${w[1]}</b></p>`:''}
+       </div>
+       <button class="${pri} w-full justify-center" onclick="next()">Siguiente pregunta →</button>
+     `:`
+       <div class="space-y-3">
+         <input id="ans" autofocus autocomplete="off" autocapitalize="off" spellcheck="false" class="w-full border-2 border-slate-200 focus:border-emerald-500 rounded-2xl px-4 py-3.5 text-center text-xl font-bold text-slate-800 focus:outline-none transition-colors" placeholder="Escribe en portugués..." onkeydown="if(event.key==='Enter')check()">
+         <button class="${pri} w-full justify-center" onclick="check()">Comprobar respuesta</button>
+       </div>
+     `}
+   </div>
+ </div>`;
+}
+
+function check(){
+ const inputVal=$("ans").value;
+ const w=items()[S.quiz.n];
+ const ok=norm(inputVal)===norm(w[1]);
+ S.quiz.fb={ok};
+ S.quiz.res.push({ok,a:inputVal,c:w[1],e:w[0]});
+ if(ok)S.quiz.ok++;
+ render();
+}
+
+function next(){
+ S.quiz.n++;
+ S.quiz.fb=null;
+ render();
+}
+
+function frases(){
+ const tabs=`
+ <div class="flex gap-2 mb-6 bg-white p-1.5 rounded-2xl shadow-sm border border-slate-100 max-w-md mx-auto">
+   <button class="flex-1 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all ${S.sub==='gir'?'bg-emerald-600 text-white shadow':'text-slate-600 hover:bg-slate-50'}" onclick="go({sub:'gir',open:null})">🇧🇷 Gírias y Modismos</button>
+   <button class="flex-1 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all ${S.sub==='sur'?'bg-emerald-600 text-white shadow':'text-slate-600 hover:bg-slate-50'}" onclick="go({sub:'sur',open:null})">✈️ Frases de Supervivencia</button>
+ </div>`;
+
+ if(S.sub==="gir"){
+  return tabs+`
+  <div class="mb-4 text-center">
+    <h2 class="text-2xl font-extrabold text-slate-800">Expresiones y Modismos Brasileños</h2>
+    <p class="text-sm text-slate-500 mt-1">Toca cualquier modismo para descubrir su contexto cultural en Brasil.</p>
+  </div>
+  <div class="grid gap-3 sm:grid-cols-2">`+
+  SLANG.map(([p,e,c],n)=>`
+    <div onclick="go({open:S.open===${n}?null:${n}})" class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 hover:border-emerald-300 transition-all cursor-pointer">
+      <div class="flex justify-between items-start">
+        <div>
+          <h3 class="font-extrabold text-emerald-800 text-lg">${p}</h3>
+          <p class="text-sm font-semibold text-slate-600">${e}</p>
+        </div>
+        <span class="text-xs px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 font-bold">${S.open===n?'Ocultar':'Ver contexto'}</span>
+      </div>
+      ${S.open===n?`<p class="text-xs text-slate-600 mt-3 pt-3 border-t border-slate-100 leading-relaxed font-medium">💬 ${c}</p>`:''}
+    </div>`).join("")+`</div>`;
+ }
+
+ return tabs+`
+ <div class="mb-4 text-center">
+   <h2 class="text-2xl font-extrabold text-slate-800">Frases Prácticas por Situación</h2>
+   <p class="text-sm text-slate-500 mt-1">Útiles para desenvolverte desde el primer día en tu viaje o charla por internet.</p>
+ </div>
+ <div class="space-y-6">`+
+ Object.entries(SURV).map(([k,a])=>`
+   <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-100">
+     <h3 class="font-extrabold text-emerald-800 text-base mb-3 flex items-center gap-2"><span>📌</span> ${k}</h3>
+     <div class="space-y-2">
+       ${a.map(([p,e])=>`
+         <div class="p-3 rounded-2xl bg-slate-50 hover:bg-emerald-50/50 transition-colors border border-slate-100">
+           <div class="font-bold text-slate-800 text-sm">🇧🇷 ${p}</div>
+           <div class="text-xs text-slate-500 font-medium mt-0.5">🇪🇸 ${e}</div>
+         </div>`).join("")}
+     </div>
+   </div>`).join("")+`</div>`;
+}
+
+function render(){
+ nav();
+ let h="";
+ if(S.tab==="tipo"){$("app").innerHTML=tipo();tyInit();return;}
+ else if(S.tab==="quiz")h=quizTab();
+ else if(S.tab==="frases")h=frases();
+ else if(S.tab==="jogos")h=jogosTab();
+ else{
+  const d=S.tab==="vocab"?THEMES:VERBS;
+  if(!S.theme)h=themeMenu(d);
+  else h=modeBar()+(S.mode==="lista"?lista():S.mode==="cards"?cards():examen());
+ }
+ $("app").innerHTML=h;
+ 
+ if(S.tab==="jogos" && G.phase==="play" && G.game==="rain"){
+  rainRenderUI();
+  const rInp=$("rainInput");
+  if(rInp)rInp.focus();
+ } else if(S.tab==="jogos" && G.phase==="play" && G.game==="timer"){
+  timerRenderUI();
+ } else {
+  const a=$("ans");
+  if(a)a.focus();
+ }
+}
+
+render();
+</script>
+</body>
+</html>
